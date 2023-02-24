@@ -1,13 +1,9 @@
-import java.util.Scanner; 
-
-class HelloWorld 
-{ 
-    public static void main(String args[]) 
+class HelloWorld { 
+    public void main(String args[]) 
     { 
-				int a = --(((b+c)/d*m*(k%j)-d.j)++);
-				return a;
+		 int a = 5;
     } 
-    static int sum(int a,int b)
+    int sum(int a,int b)
     {
     	int sum = a + b;
     	return sum;
@@ -17,7 +13,7 @@ class HelloWorld
     	String conc = a + b;
     	return conc;
     }
-    static boolean and(boolean a,boolean b)
+    boolean and(boolean a,boolean b)
     {
     	boolean ans = a&b;
     	return ans;

@@ -279,48 +279,48 @@ Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 {NotEqual} {yylval.str=strdup(yytext); return NE_OP;}
 {Increment} {yylval.str=strdup(yytext); return INC_OP;}
 {Decrement} {yylval.str=strdup(yytext); return DEC_OP;}
-{Or} {yylval.str=yytext; return OR_OP;}
-{And} {yylval.str=yytext; return AND_OP;}
-{Add} {yylval.str=yytext; return '+';}
-{Subtract} {yylval.str=yytext; return '-';}
-{Multiply} {yylval.str=yytext; return '*';}
-{Divide} {yylval.str=yytext; return '/';}
-{BitwiseOr} {yylval.str=yytext; return '|';}
-{BitwiseAnd} {yylval.str=yytext; return '&';}
-{Power} {yylval.str=yytext; return '^';}
-{Modulo} {yylval.str=yytext; return '%';}
-{DoubleGR} {yylval.str=yytext; return RIGHT_OP;}
-{DoubleLR} {yylval.str=yytext; return LEFT_OP;}
-{TripleGR} {yylval.str=yytext; return UNSIGNED_RIGHT_OP;}
-{PlusEQ} {yylval.str=yytext; return ADD_ASSIGN;}
-{SubEQ} {yylval.str=yytext; return SUB_ASSIGN;}
-{MultEq} {yylval.str=yytext; return MUL_ASSIGN;}
-{AndEQ} {yylval.str=yytext; return AND_ASSIGN;}
-{OrEQ} {yylval.str=yytext; return OR_ASSIGN;}
-{PowEQ} {yylval.str=yytext; return XOR_ASSIGN;}
-{DivEQ} {yylval.str=yytext; return DIV_ASSIGN;}
-{ModEQ} {yylval.str=yytext; return MOD_ASSIGN;}
-{DoubleGREQ} {yylval.str=yytext; return RIGHT_ASSIGN;}
-{DoubleLREQ} {yylval.str=yytext; return LEFT_ASSIGN;}
-{TripleGREQ} {yylval.str=yytext; return UNSIGNED_RIGHT_ASSIGN;}
+{Or} {yylval.str=strdup(yytext); return OR_OP;}
+{And} {yylval.str=strdup(yytext); return AND_OP;}
+{Add} {yylval.str=strdup(yytext); return '+';}
+{Subtract} {yylval.str=strdup(yytext); return '-';}
+{Multiply} {yylval.str=strdup(yytext); return '*';}
+{Divide} {yylval.str=strdup(yytext); return '/';}
+{BitwiseOr} {yylval.str=strdup(yytext); return '|';}
+{BitwiseAnd} {yylval.str=strdup(yytext); return '&';}
+{Power} {yylval.str=strdup(yytext); return '^';}
+{Modulo} {yylval.str=strdup(yytext); return '%';}
+{DoubleGR} {yylval.str=strdup(yytext); return RIGHT_OP;}
+{DoubleLR} {yylval.str=strdup(yytext); return LEFT_OP;}
+{TripleGR} {yylval.str=strdup(yytext); return UNSIGNED_RIGHT_OP;}
+{PlusEQ} {yylval.str=strdup(yytext); return ADD_ASSIGN;}
+{SubEQ} {yylval.str=strdup(yytext); return SUB_ASSIGN;}
+{MultEq} {yylval.str=strdup(yytext); return MUL_ASSIGN;}
+{AndEQ} {yylval.str=strdup(yytext); return AND_ASSIGN;}
+{OrEQ} {yylval.str=strdup(yytext); return OR_ASSIGN;}
+{PowEQ} {yylval.str=strdup(yytext); return XOR_ASSIGN;}
+{DivEQ} {yylval.str=strdup(yytext); return DIV_ASSIGN;}
+{ModEQ} {yylval.str=strdup(yytext); return MOD_ASSIGN;}
+{DoubleGREQ} {yylval.str=strdup(yytext); return RIGHT_ASSIGN;}
+{DoubleLREQ} {yylval.str=strdup(yytext); return LEFT_ASSIGN;}
+{TripleGREQ} {yylval.str=strdup(yytext); return UNSIGNED_RIGHT_ASSIGN;}
 
 
 {LeftCurlyBrace} {yylval.str=strdup(yytext); return '{';}
 {RightCurlyBrace} {yylval.str=strdup(yytext); return '}';}
-{LeftSquareBrace} {yylval.str=yytext; return '[';}
-{RightSquareBrace} {yylval.str=yytext; return ']';}
-{LeftSmallBrace} {yylval.str=yytext; return '(';}
-{RightSmallBrace} {yylval.str=yytext; return ')';}
-{Comma} {yylval.str=yytext; return ',';}
-{DoubleColon} {yylval.str=yytext; return PROPORTION;}
-{TripleDot} {yylval.str=yytext; return ELLIPSIS;}
-{FullStop} {yylval.str=yytext; return '.';}
-{SemiColon} {yylval.str=yytext; return ';';}
+{LeftSquareBrace} {yylval.str=strdup(yytext); return '[';}
+{RightSquareBrace} {yylval.str=strdup(yytext); return ']';}
+{LeftSmallBrace} {yylval.str=strdup(yytext); return '(';}
+{RightSmallBrace} {yylval.str=strdup(yytext); return ')';}
+{Comma} {yylval.str=strdup(yytext); return ',';}
+{DoubleColon} {yylval.str=strdup(yytext); return PROPORTION;}
+{TripleDot} {yylval.str=strdup(yytext); return ELLIPSIS;}
+{FullStop} {yylval.str=strdup(yytext); return '.';}
+{SemiColon} {yylval.str=strdup(yytext); return ';';}
 
 
 
 {Comment}				{ for(int i = 0; i<yyleng; ++i) if(yytext[i] == '\n') line++; /* comments, meant to be ignored */}
-{Literal}				{yylval.str=yytext; return LITERAL;}
+{Literal}				{yylval.str=strdup(yytext); return LITERAL;}
 {Identifier}			{yylval.str=strdup(yytext); return IDENTIFIER;}
 .					{ cerr<<line<<": error :: Illegal Character >>> "<<yytext<<"\n"; exit(-1); }
 

@@ -102,13 +102,13 @@ Node *createNode(string label, string value, vector <Node *> children) {
 
 %%
 CompilationUnit : 
-         | PackageDeclaration TypeDeclaration 
+         | PackageDeclaration TypeDeclaration {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{$1,$2,temp});}
          | TypeDeclaration {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{$1,temp});}
          | PackageDeclaration {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{$1,temp});}
          |         {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{temp});}
          ;
 PackageDeclaration :
-          PACKAGE TypeName ';' { $$ = $2; }
+          PACKAGE TypeName ';' { Node *temp1=createNode("PACKAGE",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("PackageDeclaration","",{temp1,$2,temp3}); }
           ;
 
 TypeDeclaration :
@@ -118,15 +118,15 @@ TypeDeclaration :
       ;
 /* production 6 */
 TypeName : IDENTIFIER                  { $$ = createNode("Identifier",$1, {}); }
-           | TypeName '.' IDENTIFIER   { Node* l = createNode("ID", $3, {}); $1->children.push_back(l); $$ = $1; }
+           | TypeName '.' IDENTIFIER   { Node* l = createNode("ID", $3, {}); Node* temp = createNode("Separator", $2, {}); $1->children.push_back(l); $1->children.push_back(temp); $$ = $1; }
            ;
 
 /*production 4 */
 
 Type
     : PrimitiveType             { $$ = $1; }
-    | ReferenceType
-    // | ArrayType                 { $$ = $1; }
+    | ReferenceType             { $$ = $1; }
+    | ArrayType                 { $$ = $1; }
     ;
 
 PrimitiveType
@@ -153,56 +153,56 @@ FloatingPointType
     ;
 
 ReferenceType 
-   : TypeName
-   | ArrayType
+   : TypeName   { $$ = $1; }
+   | ArrayType  { $$ = $1; }
    ;
 ArrayType :
-     PrimitiveType Dims
-     | TypeName Dims
+     PrimitiveType Dims { $$ = createNode("ArrayType","",{$1,$2});}
+     | TypeName Dims { $$ = createNode("ArrayType","",{$1,$2});}
      ;
 Dims :
-    Dims '[' ']'
-   | '[' ']'
+    Dims '[' ']'  { $$ = $1;Node *temp1 = createNode("Separator",$2,{});Node *temp3 = createNode("Separator",$3,{}); $$->children.push_back(temp1);$$->children.push_back(temp3);}
+   | '[' ']'       {Node *temp1 = createNode("Separator",$1,{}); Node *temp3 = createNode("Separator",$2,{});  ;$$ = createNode("DIMS","",{temp1,temp3}); } 
    ;
 /* PRODUCTION #10 (Arrays) ----------------------------------------------- */
 
 ArrayInitializer
-    : '{' VariableInitializerList ',' '}'                  { $$ = $2; }
-    | '{' VariableInitializerList '}'                      { $$ = $2; }
-    | '{' ',' '}'                                          { $$ = createNode("EMP", "", {}); }
-    | '{' '}'                                              { $$ = createNode("EMP", "", {}); }
+    : '{' VariableInitializerList ',' '}'                  { Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{});Node *temp4=createNode("Separator",$4,{}); $$=createNode("ArrayInitializer","",{temp1,$2,temp3,temp4}); }
+    | '{' VariableInitializerList '}'                      { Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("ArrayInitializer","",{temp1,$2,temp3}); }
+    | '{' ',' '}'                                           { Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$3,{}); $$=createNode("ArrayInitializer","",{temp1,temp3,temp4}); }
+    | '{' '}'                                              { Node *temp1=createNode("Separator",$1,{});Node *temp2=createNode("Separator",$2,{});$$ = createNode("ArrayInitializer_EMP", "", {temp1,temp2}); }
     ;
 
 VariableInitializerList
-    : VariableInitializer                                  { $$ = createNode("ArrayInitializer", "", {$1}); }  
-    | VariableInitializerList ',' VariableInitializer      { $$ = $1; $$->children.push_back($3); }
+    : VariableInitializer                                  { $$ = createNode("VariableInitializerList", "", {$1}); }  
+    | VariableInitializerList ',' VariableInitializer      { $$ = $1; $$->children.push_back($3);Node *temp1=createNode("Separator",$2,{});$$->children.push_back(temp1); }
     ;
 
 /* PRODUCTION #8(classes) */
 
 
 ClassDeclaration :
-     NormalClassDeclaration
+     NormalClassDeclaration  { $$ = $1; }
      ;
    
 NormalClassDeclaration 
-     : CLASS IDENTIFIER ClassBody
+     : CLASS IDENTIFIER ClassBody {Node *temp1=createNode("Keyword",$1,{});Node *temp2=createNode("Identifier",$2,{});$$=createNode("normalClassDeclaration","",{temp1,temp2,$3});}  
      ;
 
 ClassBody 
-     : '{' ClassBodyDeclaration '}'
-     | '{' '}'
+     : '{' ClassBodyDeclaration '}'  {Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("classBody","",{temp1,$2,temp3});} 
+     | '{' '}'   {Node *temp1=createNode("Separator",$1,{});Node *temp2=createNode("Separator",$2,{}); Node *temp3=createNode("fieldDeclaration","",{});$$=createNode("classBody","",{temp1,temp2});}
      ;
 ClassBodyDeclaration 
-     : ClassMemberDeclaration
-     | StaticInitializer
-     | ConstructorDeclaration
+     : ClassMemberDeclaration   { $$ = $1; }
+     | StaticInitializer         { $$ = $1; }
+     | ConstructorDeclaration    { $$ = $1; }
      ;
 
 ClassMemberDeclaration 
-     : FieldDeclaration 
-     | MethodDeclaration
-     | ClassDeclaration
+     : FieldDeclaration   { $$ = $1; }
+     | MethodDeclaration   { $$ = $1; }
+     | ClassDeclaration    { $$ = $1; }
      |     
      ;
 
@@ -218,57 +218,57 @@ ClassModifier
     | PRIVATE { $$ = createNode("Keyword", $1, {} ); }
     ;
 VariableDeclaratorList 
-    : VariableDeclaratorList ',' VariableDeclarator  {$$ = $1; Node * temp2 = createNode("Separator",$2,{});}
+    : VariableDeclaratorList ',' VariableDeclarator  {$$ = $1;$$->children.push_back($3);Node * temp2 = createNode("Separator",$2,{}); $$->children.push_back(temp2); }
     | VariableDeclarator {$$=$1;}
     ;
 
 VariableDeclarator 
-    : VariableDeclaratorId '=' VariableInitializer {Node * temp2 = createNode("=","",{}); $$=createNode("VariableDeclarator","",{$1,temp2,$3});} 
+    : VariableDeclaratorId '=' VariableInitializer {Node * temp2 = createNode("=","",{});$$->children.push_back($3); $$=createNode("VariableDeclarator","",{$1,temp2,$3});} 
     | VariableDeclaratorId {$$=$1;}
     ;   
 VariableDeclaratorId 
-    : IDENTIFIER Dims
+    : IDENTIFIER Dims {Node * temp2 = createNode("Identifier",$1,{}); $$=createNode("VariableDeclaratorId","",{temp2,$2});} 
     | IDENTIFIER  {$$=createNode("Identifier",$1,{});}
     ;
 
 VariableInitializer
    : Expression { $$=$1;}
-   | ArrayInitializer
+   | ArrayInitializer { $$=$1;}
    ;
 
 
 MethodDeclaration
-    : ClassModifier MethodHeader MethodBody     {$$ = $2; $2->children.insert($2->children.begin(), $1); $$->children.push_back($3); }     
-    | MethodHeader MethodBody                         {$$ = $1; $$->children.push_back($2); }
+    : ClassModifier MethodHeader MethodBody     {$$=createNode("MethodDeclaration","",{$1,$2,$3}); }     
+    | MethodHeader MethodBody                       {$$=createNode("MethodDeclaration","",{$1,$2}); }     
     ;
 
 MethodHeader
-    : Type MethodDeclarator                 
-    | VOID MethodDeclarator                  { $$ = $2; Node *temp = createNode("TYPE", $1, {}); $2->children.insert($2->children.begin(), temp); }
+    : Type MethodDeclarator                  {$$=createNode("MethodHeader","",{$1,$2}); }   
+    | VOID MethodDeclarator                  { Node *temp = createNode("TYPE", $1, {}); $$ = createNode("MethodHeader","",{temp,$2}); }
     ;
 
 MethodDeclarator
-    : IDENTIFIER '(' FormalParameterList ')'         { $$ = createNode("Function", $1, {$3}); }
-    | IDENTIFIER '(' ')'                             { $$ = createNode("Function", $1, {}); }
-    | IDENTIFIER '(' FormalParameterList ')' Dims    { $$ = createNode("Function", $1, {$3,$5}); }
-    | IDENTIFIER '(' ')' Dims                        { $$ = createNode("Function", $1, {$4}); }
+    : IDENTIFIER '(' FormalParameterList ')'         { Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4}); }
+    | IDENTIFIER '(' ')'                             { Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$3,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,temp4}); }
+    | IDENTIFIER '(' FormalParameterList ')' Dims    { Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4,$5}); }
+    | IDENTIFIER '(' ')' Dims                        { Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$3,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$4,temp4}); }
     ;
 
 FormalParameterList
     : ReceiverParameter                              { $$ = createNode("Parameters", "", {$1}); }
-    | FormalParameters ',' LastFormalParameter       { $$ = $1; $1->children.push_back($3); }
+    | FormalParameters ',' LastFormalParameter       { Node *temp2=createNode("Separator",$2,{}); $$=createNode("FormalParameterList","",{$1,temp2,$3}); }
     | LastFormalParameter                            { $$ = createNode("Parameters", "", {$1}); }
     ;
 
 FormalParameters
-    : FormalParameters ',' FormalParameter           { $$ = $1; $$->children.push_back($3); }
+    : FormalParameters ',' FormalParameter           { $$ = $1; $$->children.push_back($3);Node *temp=createNode("Separator",$2,{}); $$->children.push_back(temp); }
     | FormalParameter                                { $$ = createNode("Parameters", "", {$1}); }
     | ReceiverParameter                              { $$ = createNode("Parameters", "", {$1}); }
     ;
 
 FormalParameter
-    : FINAL Type VariableDeclaratorId               { Node *temp = createNode("MODIFIER", $1, {}); $$ = createNode("Parameter", "", {temp, $2, $3}); }
-    | Type VariableDeclaratorId                     { $$ = createNode("Parameter", "", {$1, $2}); }
+    : FINAL Type VariableDeclaratorId               { Node *temp = createNode("MODIFIER", $1, {}); $$ = createNode("FormalParameter", "", {temp, $2, $3}); }
+    | Type VariableDeclaratorId                     { $$ = createNode("FormalParameter", "", {$1, $2}); }
     ;
 
 LastFormalParameter
@@ -277,7 +277,7 @@ LastFormalParameter
 
 ReceiverParameter
     : Type THIS                                     { Node *n1 = createNode("THIS", $2, {}); $$ = createNode("ReceiverParameter", "", {$1, n1}); }
-    | Type IDENTIFIER '.' THIS                      { Node *n1 = createNode("THIS", $4, {}); Node *n2 = createNode("ID", $2, {}); $$ = createNode("ReceiverParameter", "", {$1, n2, n1}); }
+    | Type IDENTIFIER '.' THIS                      { Node *n1 = createNode("THIS", $4, {}); Node *n3 = createNode("Separator", $3, {}); Node *n2 = createNode("ID", $2, {}); $$ = createNode("ReceiverParameter", "", {$1, n2, n1,n3}); }
     ;
 
 MethodBody
@@ -290,41 +290,41 @@ InstanceInitializer
     ;
 
 StaticInitializer
-    : STATIC Block                                  { $$ = createNode("STATIC", $1, {$2}); }
+    : STATIC Block                                  { Node * n1 = createNode("KEYWORD", $1, {});$$ = createNode("StaticInitializer","", {n1,$2}); } 
     ;
 
 ConstructorDeclaration
-    : ClassModifier ConstructorDeclarator ConstructorBody            { $$ = $2; $$->children.insert($$->children.begin(), $1); $$->children.push_back($3);  }
+    : ClassModifier ConstructorDeclarator ConstructorBody            { $$ = $2; $$->children.push_back($1); $$->children.push_back($3);  }
     | ConstructorDeclarator ConstructorBody                                { $$ = $1; $$->children.push_back($2); }
     ;
 
 ConstructorDeclarator
-    : IDENTIFIER '(' FormalParameterList ')'                               { $$ = createNode("Constructor", $1, {$3}); }
-    | IDENTIFIER '(' ')'                                                   { $$ = createNode("Constructor", $1, {}); }
+    : IDENTIFIER '(' FormalParameterList ')'                                { Node *n1 = createNode("Identifier", $1, {});Node *n2= createNode("Separator", $2, {});Node *n3= createNode("Separator", $4, {});$$ = createNode("ConstructorDeclarator","",{n1,n2,n3,$3}); }
+    | IDENTIFIER '(' ')'                                                   { Node *n3 = createNode("Identifier", $1, {});Node *n1 = createNode("Separator", $2, {});Node *n2 = createNode("Separator", $3, {});$$ = createNode("ConstructorDeclarator","",{n1,n2,n3}); }
     ;
 
 ConstructorBody
-    : '{' ExplicitConstructorInvocation BlockStatements '}'                { $$ = createNode("Body", "", {$2, $3}); }
-    | '{' BlockStatements '}'                                              { $$ = createNode("Body", "", {$2}); }
-    | '{' ExplicitConstructorInvocation '}'                                { $$ = createNode("Body", "", {$2}); }
-    | '{' '}'                                                              { $$ = createNode("EMP", "", {}); }
+    : '{' ExplicitConstructorInvocation BlockStatements '}'                { Node *n1 = createNode("Separator", $1, {});Node *n4= createNode("Separator", $4, {});$$ = createNode("ConstructorBody","",{n1,n4,$2,$3}); }
+    | '{' BlockStatements '}'                                              { Node *n1 = createNode("Separator", $1, {});Node *n4= createNode("Separator", $3, {});$$ = createNode("ConstructorBody","",{n1,n4,$2}); }
+    | '{' ExplicitConstructorInvocation '}'                                { Node *n1 = createNode("Separator", $1, {});Node *n3= createNode("Separator", $3, {});$$ = createNode("ConstructorBody","",{n1,n3,$2}); }
+    // | '{' '}'                                                              { Node *n1 = createNode("Separator", $1, {});Node *n2= createNode("Separator", $2, {});$$ = createNode("ConstructorBody","",{$1,$2}); }
     ;
 
 ExplicitConstructorInvocation
-    : THIS SINGLE_ArgumentList                                             { $$ = createNode("THIS", $1, {$2}); }
+    : THIS SINGLE_ArgumentList                                             { Node * n1 = createNode("KEYWORD", $1, {});$$ = createNode("ExplicitConstructorInvocation","", {n1,$2}); }
     ;
 
 SINGLE_ArgumentList
-    : '(' ')' ';'                                      { $$ = createNode("EMP", "", {}); }
-    | '(' ArgumentList ')' ';'                         { $$ = $2; }
+    : '(' ')' ';'                                      { Node *n1 = createNode("Separator", $1, {});Node *n2 = createNode("Separator", $2, {});Node *n3 = createNode("Separator", $3, {});$$ = createNode("SINGLE_ArgumentList","",{n1,n2,n3});  }
+    | '(' ArgumentList ')' ';'                         { Node *n1 = createNode("Separator", $1, {});Node *n2 = createNode("Separator", $3, {});Node *n3 = createNode("Separator", $4, {});$$ = createNode("SINGLE_ArgumentList","",{n1,n2,n3,$2});  }
     ;
 
 
 /* PRODUCTION #14(block statements) */
 
 Block
-    : '{' BlockStatements '}'                { $$ = $2; }
-    | '{' '}'                                { $$ = createNode("EMP", "", {}); }
+    : '{' BlockStatements '}'                { Node *n1 = createNode("Separator", $1, {});Node *n4= createNode("Separator", $3, {});$$ = createNode("Block","",{n1,n4,$2}); }
+    // | '{' '}'                                 { Node *n1 = createNode("Separator", $1, {});Node *n2= createNode("Separator", $2, {});$$ = createNode("Block","",{$1,$2}); }
     ;
 
 BlockStatements
@@ -339,7 +339,7 @@ BlockStatement
     ;
 
 LocalVariableDeclarationStatement
-    : LocalVariableDeclaration ';'           { $$ = $1; }
+    : LocalVariableDeclaration ';'           { Node *n1 = createNode("Separator", $2, {});$$ = createNode("LocalVariableDeclarationStatement","",{n1,$1}); }
     ;
 
 LocalVariableDeclaration
@@ -373,19 +373,19 @@ StatementWithoutTrailingSubstatement
     ;
 
 EmptyStatement
-    : ';'                                    { $$ = createNode("EMP", "", {}); }
+    : ';'                                    { $$ = createNode("Separator", $1, {}); }
     ;
 
 LabeledStatement
-    : IDENTIFIER ':' Statement               { $$ = createNode("LabeledStatement", $1, {$3}); }
+    : IDENTIFIER ':' Statement               {  Node *n1 = createNode("Identifier", $1, {});Node *n2 = createNode("Separator", $2, {}); $$ = createNode("LabeledStatement","", {n1,n2,$3});}
     ;
 
 LabeledStatementNoShortIf
-    : IDENTIFIER ':' StatementNoShortIf      { $$ = createNode("LabeledStatement", $1, {$3}); }
+    : IDENTIFIER ':' StatementNoShortIf       { Node *n1 = createNode("Identifier", $1, {});Node *n2 = createNode("Separator", $2, {}); $$ = createNode("LabeledStatementNoShortIf","", {n1,n2,$3}); }
     ;
 
 ExpressionStatement
-    : StatementExpression ';'                { $$ = $1; }
+    : StatementExpression ';'                 { Node *n1 = createNode("Separator", $2, {});$$ = createNode("ExpressionStatement","",{n1,$1}); }
     ;
 
 StatementExpression
@@ -399,23 +399,23 @@ StatementExpression
     ;
 
 IfThenStatement
-    : IF '(' Expression ')' Statement                                      
+    : IF '(' Expression ')' Statement     { Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n3 = createNode("Separator", $4, {}); $$=createNode("IfThenStatement","",{n1,n2,n3,$3,$5});}                           
     ;
 
 IfThenElseStatement
-    : IF '(' Expression ')' StatementNoShortIf ELSE Statement
+    : IF '(' Expression ')' StatementNoShortIf ELSE Statement  { Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n3 = createNode("Separator", $4, {}); Node *n4 = createNode("KEYWORD", $6, {}); $$=createNode("IfThenELseStatement","",{n1,n2,n3,n4,$3,$5,$7});}      
     ;
 
 IfThenElseStatementNoShortIf
-    : IF '(' Expression ')' StatementNoShortIf ELSE StatementNoShortIf    
+    : IF '(' Expression ')' StatementNoShortIf ELSE StatementNoShortIf    { Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n3 = createNode("Separator", $4, {}); Node *n4 = createNode("KEYWORD", $6, {}); $$=createNode("IfThenElseStatementNoShortIf","",{n1,n2,n3,n4,$3,$5,$7});}    
     ;
 
 WhileStatement
-    : WHILE '(' Expression ')' Statement                                    
+    : WHILE '(' Expression ')' Statement        {Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n3 = createNode("Separator", $4, {}); $$=createNode("WhileStatement","",{n1,n2,n3,$3,$5});}                              
     ;
 
 WhileStatementNoShortIf
-    : WHILE '(' Expression ')' StatementNoShortIf                           
+    : WHILE '(' Expression ')' StatementNoShortIf                {Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n3 = createNode("Separator", $4, {}); $$=createNode("WhileStatementNoShortIf","",{n1,n2,n3,$3,$5});}                 
     ;
 
 ForStatement                                                                
@@ -429,26 +429,26 @@ ForStatementNoShortIf
     ;
 
 BasicForStatement
-    : FOR '(' SINGLE_ForInit ';' SINGLE_Expression ';' SINGLE_ForUpdate ')' Statement   
+    : FOR '(' SINGLE_ForInit ';' SINGLE_Expression ';' SINGLE_ForUpdate ')' Statement   { Node *n1 = createNode("KEYWORD", $1, {});Node *n2 = createNode("Separator", $2, {});Node *n4 = createNode("Separator", $4, {});Node *n6 = createNode("Separator", $6, {});Node *n8 = createNode("Separator", $8, {}); $$=createNode("BasicForStatement","",{n1,n2,n4,n6,n8,$3,$5,$7,$9}); }
     ;
 
 SINGLE_ForInit
-    : /* Empty */          {$$=createNode("EMP","",{});}
+    : /* Empty */          {$$=createNode("SINGLE_ForInit","",{});}
     | ForInit              {$$=$1;}
     ;
 
 SINGLE_Expression
-    : /* Empty */          {$$=createNode("EMP","",{});}
+    : /* Empty */          {$$=createNode("SINGLE_Expression","",{});}
     | Expression           {$$=$1;}
     ;
 
 SINGLE_ForUpdate
-    : /* Empty */          {$$=createNode("EMP","",{});}
+    : /* Empty */          {$$=createNode("SINGLE_ForUpdate","",{});}
     | ForUpdate            {$$=$1;}
     ;
 
 BasicForStatementNoShortIf
-    : FOR '(' SINGLE_ForInit ';' SINGLE_Expression ';' SINGLE_ForUpdate ')' StatementNoShortIf   
+    : FOR '(' SINGLE_ForInit ';' SINGLE_Expression ';' SINGLE_ForUpdate ')' StatementNoShortIf    {Node *n1 = createNode("KEYWORD", $1, {});Node *n2 = createNode("Separator", $2, {});Node *n4 = createNode("Separator", $4, {});Node *n6 = createNode("Separator", $6, {});Node *n8 = createNode("Separator", $8, {});  $$=createNode("BasicForStatementNoShortIf","",{n1,n2,n4,n6,n8,$3,$5,$7,$9}); }
     ;
 
 ForInit
@@ -461,31 +461,31 @@ ForUpdate
     ;
 
 StatementExpressionList
-    : StatementExpression                               {$$=createNode("StatementExpressions", "", {$1});}
-    | StatementExpressionList ',' StatementExpression   {$1->children.push_back($3);$$=$1;}
+    : StatementExpression                               {$$=createNode("StatementExpressionList", "", {$1});}
+    | StatementExpressionList ',' StatementExpression   {$$ = $1; $$->children.push_back($3);Node *temp1=createNode("Separator",$2,{});$$->children.push_back(temp1);}
     ;
 
 EnhancedForStatement
-    : FOR '(' Type VariableDeclaratorId ':' Expression ')' Statement          
+    : FOR '(' Type VariableDeclaratorId ':' Expression ')' Statement          { Node *n1 = createNode("KEYWORD", $1, {});Node *n2 = createNode("Separator", $2, {});Node *n5 = createNode("Separator", $5, {});Node *n7 = createNode("Separator", $7, {}); $$=createNode("EnhancedForStatement","",{n1,n2,$4,n5,n7,$3,$6,$8}); }
     ;
 
 EnhancedForStatementNoShortIf
-    : FOR '(' Type VariableDeclaratorId ':' Expression ')' StatementNoShortIf      
+    : FOR '(' Type VariableDeclaratorId ':' Expression ')' StatementNoShortIf       { Node *n1 = createNode("KEYWORD", $1, {});Node *n2 = createNode("Separator", $2, {});Node *n5 = createNode("Separator", $5, {});Node *n7 = createNode("Separator", $7, {});  $$=createNode("EnhancedForStatementNoShortIf","",{n1,n2,$4,n5,n7,$3,$6,$8});}
     ;
 
 BreakStatement
-    : BREAK IDENTIFIER ';'        {Node* temp=createNode("ID",$2,{});$$=createNode("BREAK",$1,{temp});}
-    | BREAK ';'                   {$$=createNode("BREAK",$1,{});}
+    : BREAK IDENTIFIER ';'        {Node* n1=createNode("Keyword",$1,{});Node* n2=createNode("Identifier",$2,{});Node* n3=createNode("Separator",$3,{});$$=createNode("BreakStatement","",{n1,n2,n3});}
+    | BREAK ';'                   {Node* n1=createNode("Keyword",$1,{}); Node* n2=createNode("Separator",$2,{});$$=createNode("BreakStatement","",{n1,n2});}
     ;
 
 ContinueStatement
-    : CONTINUE IDENTIFIER ';'     {Node* temp=createNode("ID",$2,{});$$=createNode("CONTINUE",$1,{temp});}
-    | CONTINUE ';'                {$$=createNode("CONTINUE",$1,{});}
+    : CONTINUE IDENTIFIER ';'     {Node* n1=createNode("Keyword",$1,{});Node* n2=createNode("Identifier",$2,{});Node* n3=createNode("Separator",$3,{});$$=createNode("ContinueStatement","",{n1,n2,n3});}
+    | CONTINUE ';'                {Node* n1=createNode("Keyword",$1,{}); Node* n2=createNode("Separator",$2,{});$$=createNode("ContinueStatement","",{n1,n2});}
     ;
 
 ReturnStatement
-    : RETURN Expression ';'       {$$=createNode("RETURN",$1,{$2});}
-    | RETURN ';'                  {$$=createNode("RETURN",$1,{});}
+    : RETURN Expression ';'       {Node* n1=createNode("Keyword",$1,{});Node* n3=createNode("Separator",$3,{});$$=createNode("BreakStatement","",{n1,$2,n3});}
+    | RETURN ';'                  {Node* n1=createNode("Keyword",$1,{}); Node* n2=createNode("Separator",$2,{});$$=createNode("BreakStatement","",{n1,n2});}
     ;
 
 
@@ -501,9 +501,8 @@ PrimaryNoNewArray
     : LITERAL                                                                       {$$=createNode("LITERAL",$1,{});}
     | ClassLiteral                                                                  {$$=$1;}
     | THIS                                                                          {$$=createNode("KEYWORD",$1,{});}
-    | TypeName '.' THIS                                                             {Node *temp = createNode("KEYWORD",$3,{});
-                                                                                     $$=createNode("PRIMARYNONEWARRAY","",{$1,temp});}                                                             
-    | '(' Expression ')'                                                            {$$=$2;}
+    | TypeName '.' THIS                                                             {Node *temp = createNode("KEYWORD",$3,{});Node *temp1 = createNode("Separator",$2,{} ); $$=createNode("PRIMARYNONEWARRAY","",{$1,temp,temp1});}                                                             
+    | '(' Expression ')'                                                            {Node *temp = createNode("Separator",$3,{});Node *temp1 = createNode("Separator",$1,{} ); $$=createNode("PRIMARYNONEWARRAY","",{$2,temp,temp1});}     
     | ClassInstanceCreationExpression                                               {$$=$1;}
     | FieldAccess                                                                   {$$=$1;}
     | ArrayAccess                                                                   {$$=$1;}
@@ -512,84 +511,83 @@ PrimaryNoNewArray
     ;
 
 ClassLiteral
-    : TypeName Dims '.' CLASS                                                       {Node *temp = createNode("KEYWORD",$4,{});
-                                                                                     $$ = createNode("CLASS_LITERAL","",{$1,$2,temp});}
-    | TypeName '.' CLASS                                                            {Node *temp = createNode("KEYWORD",$3,{});
-                                                                                     $$ = createNode("CLASS_LITERAL","",{$1,temp});}
-    | PrimitiveType Dims '.' CLASS                                                  {Node *temp = createNode("KEYWORD",$4,{});
-                                                                                     $$ = createNode("CLASS_LITERAL","",{$1,$2,temp});}
-    | PrimitiveType '.' CLASS /* combined numerictype and boolean */                {Node *temp = createNode("KEYWORD",$3,{});
-                                                                                     $$ = createNode("CLASS_LITERAL","",{$1,temp});}
-    | VOID '.' CLASS                                                                {Node *temp = createNode("KEYWORD",$3,{});
+    : TypeName Dims '.' CLASS                                                       {Node *temp = createNode("KEYWORD",$4,{});Node *temp1 = createNode("Separator",$3,{});
+                                                                                      $$ = createNode("CLASS_LITERAL","",{$1,$2,temp,temp1});}
+    | TypeName '.' CLASS                                                            {Node *temp = createNode("KEYWORD",$3,{});Node *temp1 = createNode("Separator",$2,{});
+                                                                                     $$ = createNode("CLASS_LITERAL","",{$1,temp,temp1});}
+    | PrimitiveType Dims '.' CLASS                                                  {Node *temp = createNode("KEYWORD",$4,{});Node *temp1 = createNode("Separator",$3,{});
+                                                                                     $$ = createNode("CLASS_LITERAL","",{$1,$2,temp,temp1});}
+    | PrimitiveType '.' CLASS                                                   {Node *temp = createNode("KEYWORD",$3,{});Node *temp1 = createNode("Separator",$2,{});
+                                                                                     $$ = createNode("CLASS_LITERAL","",{$1,temp,temp1});}
+    | VOID '.' CLASS                                                                {Node *temp = createNode("KEYWORD",$3,{});Node *temp2= createNode("Separator",$2,{});
                                                                                      Node *temp1 = createNode("KEYWORD",$1,{});
-                                                                                     $$ = createNode("CLASS_LITERAL","",{temp1,temp});}
+                                                                                     $$ = createNode("CLASS_LITERAL","",{temp1,temp,temp2});}
     ;
 
 ClassInstanceCreationExpression
     : UnqualifiedClassInstanceCreationExpression                                         {$$=$1;}
-    | /*treat as expression name*/TypeName '.' UnqualifiedClassInstanceCreationExpression{$$=createNode("CLASS_INSTANCE","",{$1,$3});$1->label="Expression Name";}
-    | Primary '.' UnqualifiedClassInstanceCreationExpression                             {$$=createNode("CLASS_INSTANCE","",{$1,$3});}
+    | TypeName '.' UnqualifiedClassInstanceCreationExpression                {Node *temp1 = createNode("Separator",$2,{});$$=createNode("CLASS_INSTANCE","",{$1,$3,temp1});}
+    | Primary '.' UnqualifiedClassInstanceCreationExpression                             {Node *temp1 = createNode("Separator",$2,{});$$=createNode("CLASS_INSTANCE","",{$1,$3,temp1});}
     ;
 
 UnqualifiedClassInstanceCreationExpression
     : NEW TypeName '(' ArgumentList ')'                                                 {Node *temp = createNode("KEYWORD",$1,{});
-                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,$4});$2->label="ClassType";}
-    | NEW TypeName '(' ArgumentList ')' ClassBody                                       {Node *temp = createNode("KEYWORD",$1,{});
-                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,$4,$6});$2->label="ClassType";}
-    | NEW TypeName '(' ')' ClassBody                                                    {Node *temp = createNode("KEYWORD",$1,{});
-                                                                                        Node *temp1 = createNode("EMP","",{});
-                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,temp1,$5});$2->label="ClassType";}
+                                                                                        Node *temp1 = createNode("Separator",$3,{});Node *temp2 = createNode("Separator",$5,{});$$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,$4,temp1,temp2});}
+    | NEW TypeName '(' ArgumentList ')' ClassBody                                       {Node *temp = createNode("KEYWORD",$1,{});Node *temp1 = createNode("Separator",$3,{});Node *temp2= createNode("Separator",$5,{});
+                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,$4,$6,temp1,temp2});}
+    | NEW TypeName '(' ')' ClassBody                                                    {Node *temp = createNode("KEYWORD",$1,{});Node *temp1 = createNode("Separator",$3,{});Node *temp2 = createNode("Separator",$4,{});
+                            
+                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,temp1,$5,temp2});}
     | NEW TypeName '(' ')'                                                              {Node *temp = createNode("KEYWORD",$1,{});
-                                                                                        Node *temp1 = createNode("EMP","",{});
-                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,temp1});$2->label="ClassType";}
-    ;/*in each treat typename as classorinterfacetypetoinstantiate */
+                                                                                        Node *temp1 = createNode("Separator",$3,{});Node *temp2 = createNode("Separator",$4,{});
+                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,temp1,temp2});}
+    
 
 FieldAccess
-    : Primary '.' IDENTIFIER                                                           {Node *temp = createNode("ID",$3,{});
-                                                                                        $$ = createNode("FIELDACC","",{$1,temp});}
+    : Primary '.' IDENTIFIER                                                           {Node *temp = createNode("ID",$3,{});Node *temp1 = createNode("Separator",$2,{});
+                                                                                        $$ = createNode("FIELDACC","",{$1,temp,temp1});}
     ;
 
 ArrayAccess
-    : /*treat as expression name*/TypeName '[' Expression ']'                          {$$=createNode("ARRAY","",{$1,$3});$1->label="Expression Name";}
-    | PrimaryNoNewArray '[' Expression ']'                                             {$$=createNode("ARRAY","",{$1,$3});}
+    : TypeName '[' Expression ']'                          {Node *temp1 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$4,{});$$=createNode("ARRAY","",{$1,$3,temp1,temp2});}
+    | PrimaryNoNewArray '[' Expression ']'                                             {Node *temp1 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$4,{});$$=createNode("ARRAY","",{$1,$3,temp1,temp2});}
     ;
 
 MethodInvocation
-    : IDENTIFIER '(' ArgumentList ')'                                                  {Node *temp = createNode("ID",$1,{});
-                                                                                        $$=createNode("METHODINVOCATION","",{temp,$3});}
-    | IDENTIFIER '(' ')'                                                               {Node *temp = createNode("ID",$1,{});
-                                                                                        Node *temp1 = createNode("EMP","",{});
-                                                                                        $$=createNode("METHODINVOCATION","",{temp,temp1});}
-    | /*treat both as typename and expression name*/TypeName '.' IDENTIFIER '(' ArgumentList ')'
-                                                                                       {Node *temp = createNode("ID",$3,{});
-                                                                                        $$=createNode("METHODINVOCATION","",{$1,temp,$5});}
-    | /*treat both as typename and expression name*/TypeName '.' IDENTIFIER '(' ')'
-                                                                                        {Node *temp = createNode("ID",$3,{});
-                                                                                        Node *temp1 = createNode("EMP","",{});
-                                                                                        $$=createNode("METHODINVOCATION","",{$1,temp,temp1});}
-    | Primary '.' IDENTIFIER '(' ArgumentList ')'                                       {Node *temp = createNode("ID",$3,{});
-                                                                                        $$=createNode("METHODINVOCATION","",{$1,temp,$5});}
-    | Primary '.' IDENTIFIER '(' ')'                                                    {Node *temp = createNode("ID",$3,{});
-                                                                                        Node *temp1 = createNode("EMP","",{});
-                                                                                        $$=createNode("METHODINVOCATION","",{$1,temp,temp1});}
+    : IDENTIFIER '(' ArgumentList ')'                                                  {Node *temp = createNode("Identifier",$1,{});Node *temp1 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$4,{});
+                                                                                        $$=createNode("METHODINVOCATION","",{temp,$3,temp1,temp2});}
+    | IDENTIFIER '(' ')'                                                               {Node *temp = createNode("ID",$1,{});Node *temp3 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$3,{});
+                                                                                       
+                                                                                        $$=createNode("METHODINVOCATION","",{temp,temp2,temp3});}
+    | TypeName '.' IDENTIFIER '(' ArgumentList ')'
+                                                                                       {Node *temp = createNode("Identifier",$3,{});Node *temp1 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$4,{});Node *temp3 = createNode("Separator",$6,{});
+                                                                                        $$=createNode("METHODINVOCATION","",{$1,temp,$5,temp1,temp2,temp3});}
+    | TypeName '.' IDENTIFIER '(' ')'
+                                                                                        {Node *temp = createNode("Identifier",$3,{});Node *temp3= createNode("Separator",$2,{});Node *temp4= createNode("Separator",$4,{});Node *temp5 = createNode("Separator",$5,{});
+                                                                                        Node *temp1 = createNode("METHODINVOCATION","",{temp,temp3,temp4,$1,temp5});
+                                                                                        $$=createNode("METHODINVOCATION","",{$1,temp,temp1,temp3,temp4});}
+    | Primary '.' IDENTIFIER '(' ArgumentList ')'                                        {Node *temp = createNode("Identifier",$3,{});Node *temp1 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$4,{});Node *temp3 = createNode("Separator",$6,{});
+                                                                                        $$=createNode("METHODINVOCATION","",{$1,temp,$5,temp1,temp2,temp3});}
+    | Primary '.' IDENTIFIER '(' ')'                                                    {Node *temp = createNode("Identifier",$3,{});Node *temp3= createNode("Separator",$2,{});Node *temp4= createNode("Separator",$4,{});Node *temp5 = createNode("Separator",$5,{});
+                                                                                        Node *temp1 = createNode("METHODINVOCATION","",{temp,temp3,temp4,temp5,$1});}
    ;
 
 ArgumentList
-    : ArgumentList ',' Expression                                                      {$1->children.push_back($3); $$ = $1; }
+    : ArgumentList ',' Expression                                                      {Node *temp = createNode("Separator",$2,{}); $1->children.push_back($3); $1->children.push_back(temp);$$ = $1;}
     | Expression                                                                       {$$ = createNode("ARGLIST","", {$1}); }
     ;
 
 MethodReference
-   : /*treat as expression name and class type*/TypeName PROPORTION IDENTIFIER          {Node *temp = createNode("ID",$3,{});
-                                                                                         $$ = createNode("METHOD_REF","",{$1,temp});}
-   | ArrayType PROPORTION IDENTIFIER                                                    {Node *temp = createNode("ID",$3,{});
-                                                                                         $$ = createNode("METHOD_REF","",{$1,temp});}
-   | Primary PROPORTION IDENTIFIER                                                      {Node *temp = createNode("ID",$3,{});
-                                                                                         $$ = createNode("METHOD_REF","",{$1,temp});}
-   | /*treat as class type*/TypeName PROPORTION NEW                                     {Node *temp = createNode("KEYWORD",$3,{});
-                                                                                         $$ = createNode("METHOD_REF","",{$1,temp});$1->label="ClassType";}
-   | ArrayType PROPORTION NEW                                                           {Node *temp = createNode("KEYWORD",$3,{});
-                                                                                         $$ = createNode("METHOD_REF","",{$1,temp});}
+   : TypeName PROPORTION IDENTIFIER          {Node *temp = createNode("Identifier",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
+                                                                                         $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
+   | ArrayType PROPORTION IDENTIFIER                                                    {Node *temp = createNode("ID",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
+                                                                                         $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
+   | Primary PROPORTION IDENTIFIER                                                      {Node *temp = createNode("ID",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
+                                                                                         $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
+   |  TypeName PROPORTION NEW                                     {Node *temp = createNode("KEYWORD",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
+                                                                                         $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
+   | ArrayType PROPORTION NEW                                                           {Node *temp = createNode("KEYWORD",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
+                                                                                         $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
    ;
 
 ArrayCreationExpression
@@ -597,14 +595,14 @@ ArrayCreationExpression
                                                                                          $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
    | NEW PrimitiveType DimExprs                                                         {Node *temp = createNode("KEYWORD",$1,{});
                                                                                          $$ = createNode("ARRAY_CREATION","",{temp,$2,$3});}                                      
-   | NEW /*treat as class type*/TypeName DimExprs Dims                                  {Node *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});$2->label="ClassType";}
-   | NEW /*treat as class type*/TypeName DimExprs                                       {Node *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3});$2->label="ClassType";}
+   | NEW TypeName DimExprs Dims                                  {Node *temp = createNode("KEYWORD",$1,{});
+                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
+   | NEW TypeName DimExprs                                       {Node *temp = createNode("KEYWORD",$1,{});
+                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3});}
    | NEW PrimitiveType Dims ArrayInitializer                                            {Node *temp = createNode("KEYWORD",$1,{});
                                                                                          $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
-   | NEW /*treat as class type*/TypeName Dims ArrayInitializer                          {Node *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});$2->label="ClassType";}
+   | NEW TypeName Dims ArrayInitializer                          {Node *temp = createNode("KEYWORD",$1,{});
+                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
    ;
 
 DimExprs
@@ -613,7 +611,7 @@ DimExprs
    ;
 
 DimExpr
-   : '[' Expression ']'                                                                 {$$=$2;}
+   : '[' Expression ']'                                                                 {Node *temp2=createNode("Separator",$1,{});Node *temp1=createNode("Separator",$3,{});$$ = createNode("DimExpr","", {temp1,temp2,$2});}
    ;
 
 Expression
@@ -627,7 +625,7 @@ AssignmentExpression
 
 Assignment
    : LeftHandSide AssignmentOperator Expression                                         {$2->children={$1,$3};$$=$2;}
-   | /*treat as expression name*/TypeName AssignmentOperator Expression                 {$2->children={$1,$3};$$=$2;$1->label="Expression Name";}
+   |  TypeName AssignmentOperator Expression                 {$2->children={$1,$3};$$=$2;}
    ;
 
 LeftHandSide
@@ -652,7 +650,7 @@ AssignmentOperator
 
 ConditionalExpression
    : ConditionalOrExpression                                                            {$$=$1;}
-   | ConditionalOrExpression '?' Expression ':' ConditionalExpression                   
+   | ConditionalOrExpression '?' Expression ':' ConditionalExpression                   {Node *temp1=createNode("Separator",$2,{});Node *temp2=createNode("Separator",$4,{});$$=createNode("BRANCH","",{$1,$3,$5,temp1,temp2});}
    ;
 
 ConditionalOrExpression
@@ -746,7 +744,7 @@ UnaryExpressionNotPlusMinus
 
 PostfixExpression
    : Primary                                                                            {$$=$1;}
-   | /*treat as expression name*/TypeName                                               {$$=$1;$1->label="Expression Name";}
+   | /*treat as expression name*/TypeName                                               {$$=$1;}
    | PostIncrementExpression                                                            {$$=$1;}
    | PostDecrementExpression                                                            {$$=$1;}
    ;
@@ -762,7 +760,7 @@ PostDecrementExpression
    ;
 
 CastExpression
-   : '(' PrimitiveType ')' UnaryExpression                                              {$$=createNode("TYPECAST","",{$2,$4});}
+   : '(' PrimitiveType ')' UnaryExpression                                              {Node * temp1 = createNode("Separator",$1,{});Node * temp3 = createNode("Separator",$3,{});$$=createNode("TYPECAST","",{$2,$4,temp1,temp3});}
    ;
 
 

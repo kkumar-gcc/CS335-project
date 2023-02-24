@@ -1,3 +1,7 @@
 class Test {
-    int a=5;
+    private String concatenate(String a,String b)
+    {	
+    	String conc = a + b;
+    	return conc;
+    }
 }
