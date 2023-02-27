@@ -1,7 +1,8 @@
 class HelloWorld { 
     public void main(String args[]) 
     { 
-		 int a = 5;
+		 int a = --(((b+c)/d*m*(k%j)-d.j)++);
+         return a;
     } 
     int sum(int a,int b)
     {

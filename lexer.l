@@ -15,55 +15,31 @@ long long int line = 1;
 %}
 
 
-Abstract "abstract"
-Assert "assert"
 Boolean "boolean"
 Break "break"
 Byte "byte"
-Case "case"
-Catch "catch"
 Char "char"
 Class "class"
 Const "const"
 Continue "continue"
-Default "default"
-Do "do"
 Double "double"
 Else "else"
-Enum "enum"
-Extends "extends"
 Final "final"
-Finally "finally"
 Float "float"
 For "for"
 If "if"
-Goto "goto"
-Implements "implements"
-Import "import"
 Instanceof "instanceof"
 Int "int"
-Interface "interface"
 Long "long"
-Native "native"
 New "new"
 Package "package"
 Private "private"
-Protected "protected"
 Public "public"
 Return "return"
 Short "short"
 Static "static"
-Strictfp "strictfp"
-Super "super"
-Switch "switch"
-Synchronized "synchronized"
 This "this"
-Throw "throw"
-Throws "throws"
-Transient "transient"
-Try "try"
 Void "void"
-Volatile "volatile"
 While "while"
 
 
@@ -125,16 +101,10 @@ SemiColon ";"
 
 
 HexDigit                [0-9a-fA-F]
-UnicodeMarker           [u]+
-UnicodeEscape           ("\\"|"\\\\\\"+){UnicodeMarker}{HexDigit}{4}
-UnicodeInputCharacterNotBackSlashNotSingleQuote {UnicodeEscape}|{RawInputCharacterNotBackSlashNotSingleQuote}
-UnicodeInputCharacterNotBackSlashNotDoubleQuote {UnicodeEscape}|{RawInputCharacterNotBackSlashNotDoubleQuote}
 
-RawInputCharacterNotBackSlashNotDoubleQuote [^\n\r\\"]
-RawInputCharacterNotBackSlashNotSingleQuote [^\n\r\\']
+InputCharacterNotBackSlashNotDoubleQuote [^\n\r\\"]
+InputCharacterNotBackSlashNotSingleQuote [^\n\r\\']
 
-InputCharacterNotBackSlashNotDoubleQuote {UnicodeInputCharacterNotBackSlashNotDoubleQuote}
-InputCharacterNotBackSlashNotSingleQuote {UnicodeInputCharacterNotBackSlashNotSingleQuote}
 
 Comment					\/\/.*|\/\*([^\*]*(\*+[^\*\/]+)*)*\**\*\/
 
@@ -188,11 +158,9 @@ BinaryExponentIndicator	"p"|"P"
 
 BooleanLiteral			"true"|"false"
 
-CharacterLiteral		(')({SingleCharacter}|{EscapeSequence})(')
-SingleCharacter			{InputCharacterNotBackSlashNotSingleQuote}
+CharacterLiteral		('[^'\\\n]'|'{EscapeSequence}')
 
-StringLiteral			(\"){StringCharacter}*(\")
-StringCharacter			{InputCharacterNotBackSlashNotDoubleQuote}|{EscapeSequence}
+StringLiteral			\"([^\"\\\n]|{EscapeSequence})*\"
 
 EscapeSequence			(\\)[btnfr]|{OctalEscape}|"\\\\"|"\\\""|"\\'"
 OctalEscape				(\\)({OctalDigit}|{OctalDigit}{OctalDigit}|{ZeroToThree}{OctalDigit}{OctalDigit})
@@ -213,55 +181,31 @@ Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 [\n\r]					;
 
 
-{Abstract} {yylval.str=strdup(yytext); return ABSTRACT;}
-{Assert} {yylval.str=strdup(yytext); return ASSERT;}
 {Boolean} {yylval.str=strdup(yytext); return BOOLEAN;}
 {Break} {yylval.str=strdup(yytext); return BREAK;}
 {Byte} {yylval.str=strdup(yytext); return BYTE;}
-{Case} {yylval.str=strdup(yytext); return CASE;}
-{Catch} {yylval.str=strdup(yytext); return CATCH;}
 {Char} {yylval.str=strdup(yytext); return CHAR;}
 {Class} {yylval.str=strdup(yytext); return CLASS;}
 {Const} {yylval.str=strdup(yytext); return CONST;}
 {Continue} {yylval.str=strdup(yytext); return CONTINUE;}
-{Default} {yylval.str=strdup(yytext); return DEFAULT;}
-{Do} {yylval.str=strdup(yytext); return DO;}
 {Double} {yylval.str=strdup(yytext); return DOUBLE;}
 {Else} {yylval.str=strdup(yytext); return ELSE;}
-{Enum} {yylval.str=strdup(yytext); return ENUM;}
-{Extends} {yylval.str=strdup(yytext); return EXTENDS;}
 {Final} {yylval.str=strdup(yytext); return FINAL;}
-{Finally} {yylval.str=strdup(yytext); return FINALLY;}
 {Float} {yylval.str=strdup(yytext); return FLOAT;}
 {For} {yylval.str=strdup(yytext); return FOR;}
 {If} {yylval.str=strdup(yytext); return IF;}
-{Goto} {yylval.str=strdup(yytext); return GOTO;}
-{Implements} {yylval.str=strdup(yytext); return IMPLEMENTS;}
-{Import} {yylval.str=strdup(yytext); return IMPORT;}
 {Instanceof} {yylval.str=strdup(yytext); return INSTANCEOF;}
 {Int} {yylval.str=strdup(yytext); return INT;}
-{Interface} {yylval.str=strdup(yytext); return INTERFACE;}
 {Long} {yylval.str=strdup(yytext); return LONG;}
-{Native} {yylval.str=strdup(yytext); return NATIVE;}
 {New} {yylval.str=strdup(yytext); return NEW;}
 {Package} {yylval.str=strdup(yytext); return PACKAGE;}
 {Private} {yylval.str=strdup(yytext); return PRIVATE;}
-{Protected} {yylval.str=strdup(yytext); return PROTECTED;}
 {Public} {yylval.str=strdup(yytext); return PUBLIC;}
 {Return} {yylval.str=strdup(yytext); return RETURN;}
 {Short} {yylval.str=strdup(yytext); return SHORT;}
 {Static} {yylval.str=strdup(yytext); return STATIC;}
-{Strictfp} {yylval.str=strdup(yytext); return STRICTFP;}
-{Super} {yylval.str=strdup(yytext); return SUPER;}
-{Switch} {yylval.str=strdup(yytext); return SWITCH;}
-{Synchronized} {yylval.str=strdup(yytext); return SYNCHRONIZED;}
 {This} {yylval.str=strdup(yytext); return THIS;}
-{Throw} {yylval.str=strdup(yytext); return THROW;}
-{Throws} {yylval.str=strdup(yytext); return THROWS;}
-{Transient} {yylval.str=strdup(yytext); return TRANSIENT;}
-{Try} {yylval.str=strdup(yytext); return TRY;}
 {Void} {yylval.str=strdup(yytext); return VOID;}
-{Volatile} {yylval.str=strdup(yytext); return VOLATILE;}
 {While} {yylval.str=strdup(yytext); return WHILE;}
 
 

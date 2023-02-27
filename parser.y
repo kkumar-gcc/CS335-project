@@ -31,16 +31,16 @@ Node *createNode(string label, string value, vector <Node *> children) {
 
 %start CompilationUnit
 
-%token <str> ABSTRACT CONTINUE FOR SWITCH
-%token <str> ASSERT DEFAULT IF PACKAGE SYNCHRONIZED
-%token <str> BOOLEAN DO GOTO PRIVATE THIS
-%token <str> BREAK DOUBLE IMPLEMENTS PROTECTED THROW
-%token <str> BYTE ELSE IMPORT PUBLIC THROWS
-%token <str> CASE ENUM RETURN TRANSIENT
-%token <str> CATCH EXTENDS INT SHORT TRY
-%token <str> CHAR FINAL INTERFACE STATIC VOID
-%token <str> CLASS FINALLY LONG STRICTFP VOLATILE
-%token <str> CONST FLOAT NATIVE SUPER WHILE
+%token <str> CONTINUE FOR
+%token <str> IF PACKAGE
+%token <str> BOOLEAN PRIVATE THIS
+%token <str> BREAK DOUBLE
+%token <str> BYTE ELSE PUBLIC
+%token <str> RETURN
+%token <str> INT SHORT
+%token <str> CHAR FINAL STATIC VOID
+%token <str> CLASS LONG
+%token <str> CONST FLOAT WHILE
 
 %token <str> LITERAL IDENTIFIER
 
@@ -62,63 +62,60 @@ Node *createNode(string label, string value, vector <Node *> children) {
 
 %right <str> '(' ')' '{' '}' '[' ']' '.' ',' ';' ELLIPSIS PROPORTION PTR_OP
 
-%type <node> CompilationUnit PackageDeclaration ImportDeclaration SingleTypeImportDeclaration
-%type <node> TypeImportOnDemandDeclaration SingleStaticImportDeclaration StaticImportOnDemandDeclaration
+%type <node> CompilationUnit PackageDeclaration
 %type <node> TypeDeclaration TypeName Type PrimitiveType NumericType IntegralType FloatingPointType
 %type <node> ReferenceType ArrayType Dims ArrayInitializer VariableInitializerList ClassDeclaration
-%type <node> NormalClassDeclaration ClassModifier Superclass Superinterfaces InterfaceTypeList
+%type <node> NormalClassDeclaration ClassModifier
 %type <node> ClassBody ClassMemberDeclaration ClassBodyDeclaration FieldDeclaration VariableDeclaratorList
 %type <node> VariableDeclarator VariableDeclaratorId VariableInitializer MethodDeclaration MethodHeader
 %type <node> MethodDeclarator FormalParameterList FormalParameters FormalParameter LastFormalParameter
-%type <node> ReceiverParameter Throws ExceptionTypeList ExceptionType MethodBody InstanceInitializer
+%type <node> ReceiverParameter MethodBody
 %type <node> StaticInitializer ConstructorDeclaration ConstructorDeclarator ConstructorBody 
-%type <node> ExplicitConstructorInvocation EnumDeclaration EnumBody EnumConstantList EnumConstant EnumBodyDeclarations
-%type <node> InterfaceDeclaration NormalInterfaceDeclaration ExtendsInterfaces InterfaceBody
-%type <node> InterfaceMemberDeclaration ConstantDeclaration InterfaceMethodDeclaration Block
+%type <node> ExplicitConstructorInvocation
+%type <node> Block
 %type <node> BlockStatements BlockStatement LocalVariableDeclarationStatement LocalVariableDeclaration
 %type <node> Statement StatementNoShortIf StatementWithoutTrailingSubstatement EmptyStatement LabeledStatement
 %type <node> LabeledStatementNoShortIf ExpressionStatement StatementExpression IfThenStatement IfThenElseStatement
-%type <node> IfThenElseStatementNoShortIf AssertStatement SwitchStatement SwitchBlock SwitchBlockStatementGroup
-%type <node> SwitchLabel WhileStatement WhileStatementNoShortIf DoStatement ForStatement ForStatementNoShortIf
+%type <node> IfThenElseStatementNoShortIf
+%type <node> WhileStatement WhileStatementNoShortIf ForStatement ForStatementNoShortIf
 %type <node> BasicForStatement SINGLE_ForInit SINGLE_Expression SINGLE_ForUpdate BasicForStatementNoShortIf ForInit 
 %type <node> ForUpdate StatementExpressionList EnhancedForStatement EnhancedForStatementNoShortIf BreakStatement
-%type <node> ContinueStatement ReturnStatement ThrowStatement SynchronizedStatement TryStatement 
-%type <node> Catches CatchClause CatchFormalParameter CatchType Finally TryWithResourcesStatement 
-%type <node> ResourceSpecification ResourceList Resource 
+%type <node> ContinueStatement ReturnStatement
 %type <node> Primary PrimaryNoNewArray ClassLiteral ClassInstanceCreationExpression
 %type <node> UnqualifiedClassInstanceCreationExpression FieldAccess ArrayAccess
 %type <node> MethodInvocation ArgumentList MethodReference ArrayCreationExpression
-%type <node> DimExprs DimExpr Expression LambdaExpression LambdaParameters
-%type <node> LambdaBody AssignmentExpression Assignment LeftHandSide
+%type <node> DimExprs DimExpr Expression
+%type <node> AssignmentExpression Assignment LeftHandSide
 %type <node> AssignmentOperator ConditionalExpression ConditionalOrExpression
 %type <node> ConditionalAndExpression InclusiveOrExpression ExclusiveOrExpression
 %type <node> AndExpression EqualityExpression RelationalExpression ShiftExpression
 %type <node> AdditiveExpression MultiplicativeExpression UnaryExpression PreIncrementExpression
 %type <node> PreDecrementExpression UnaryExpressionNotPlusMinus PostfixExpression
 %type <node> PostIncrementExpression PostDecrementExpression CastExpression
-%type <node> MULTI_ImportDeclaration MULTI_TypeDeclaration
+%type <node> MULTI_TypeDeclaration
 %type <node> MULTI_ClassModifier MULTI_ClassBodyDeclaration SINGLE_ArgumentList
-%type <node> MULTI_InterfaceMemberDeclaration MULTI_SwitchBlockStatementGroup MULTI_SwitchLabel
 
 %%
 CompilationUnit : 
-         | PackageDeclaration TypeDeclaration {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{$1,$2,temp});}
-         | TypeDeclaration {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{$1,temp});}
+         PackageDeclaration MULTI_TypeDeclaration {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{$1,$2,temp});}
+         | MULTI_TypeDeclaration {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{$1,temp});}
          | PackageDeclaration {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{$1,temp});}
          |         {Node * temp=createNode("EOF","<EOF>",{}); root =createNode("compilationUnit","",{temp});}
          ;
 PackageDeclaration :
           PACKAGE TypeName ';' { Node *temp1=createNode("PACKAGE",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("PackageDeclaration","",{temp1,$2,temp3}); }
           ;
-
+MULTI_TypeDeclaration :
+       TypeDeclaration  {$$=createNode("multiTypeDeclaration","",{$1});}
+       | MULTI_TypeDeclaration TypeDeclaration { $$=$1; $$->children.push_back($2);}
+      ;
 TypeDeclaration :
       ClassDeclaration {$$ = $1;}
-      | ';'
-      // | InterfaceDeclaration
+      | ';' {$$=createNode("Separator",$1,{});}
       ;
 /* production 6 */
 TypeName : IDENTIFIER                  { $$ = createNode("Identifier",$1, {}); }
-           | TypeName '.' IDENTIFIER   { Node* l = createNode("ID", $3, {}); Node* temp = createNode("Separator", $2, {}); $1->children.push_back(l); $1->children.push_back(temp); $$ = $1; }
+           | TypeName '.' IDENTIFIER   { Node* l = createNode("Identifier", $3, {}); Node* temp = createNode("Separator", $2, {}); $1->children.push_back(l); $1->children.push_back(temp); $$ = $1; }
            ;
 
 /*production 4 */
@@ -186,12 +183,17 @@ ClassDeclaration :
      ;
    
 NormalClassDeclaration 
-     : CLASS IDENTIFIER ClassBody {Node *temp1=createNode("Keyword",$1,{});Node *temp2=createNode("Identifier",$2,{});$$=createNode("normalClassDeclaration","",{temp1,temp2,$3});}  
+     : MULTI_ClassModifier CLASS IDENTIFIER ClassBody  {Node *temp2=createNode("Keyword",$2,{});Node *temp3=createNode("Identifier",$3,{});$$=createNode("normalClassDeclaration","",{$1,temp2,temp3,$4});}
+     | CLASS IDENTIFIER ClassBody {Node *temp1=createNode("Keyword",$1,{});Node *temp2=createNode("Identifier",$2,{});$$=createNode("normalClassDeclaration","",{temp1,temp2,$3});}  
      ;
 
 ClassBody 
-     : '{' ClassBodyDeclaration '}'  {Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("classBody","",{temp1,$2,temp3});} 
+     : '{' MULTI_ClassBodyDeclaration '}'  {Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("classBody","",{temp1,$2,temp3});} 
      | '{' '}'   {Node *temp1=createNode("Separator",$1,{});Node *temp2=createNode("Separator",$2,{}); Node *temp3=createNode("fieldDeclaration","",{});$$=createNode("classBody","",{temp1,temp2});}
+     ;
+MULTI_ClassBodyDeclaration 
+     : ClassBodyDeclaration {$$=createNode("multiClassBodyDeclaration","",{$1});}
+     | MULTI_ClassBodyDeclaration ClassBodyDeclaration { $$=$1; $$->children.push_back($2);}
      ;
 ClassBodyDeclaration 
      : ClassMemberDeclaration   { $$ = $1; }
@@ -203,19 +205,23 @@ ClassMemberDeclaration
      : FieldDeclaration   { $$ = $1; }
      | MethodDeclaration   { $$ = $1; }
      | ClassDeclaration    { $$ = $1; }
-     |     
+     | ';' {$$=createNode("Separator",$1,{});}
      ;
 
 
 
 FieldDeclaration
-    : ClassModifier Type VariableDeclaratorList ';' {Node * temp4 =createNode("Separator",$4,{});$$=createNode("fieldDeclaration","",{$1,$2,$3,temp4});}
+    : MULTI_ClassModifier Type VariableDeclaratorList ';' {Node * temp4 =createNode("Separator",$4,{});$$=createNode("fieldDeclaration","",{$1,$2,$3,temp4});}
     | Type VariableDeclaratorList ';' {Node * temp3 =createNode("Separator",$3,{});$$=createNode("fieldDeclaration","",{$1,$2,temp3});}
     ;
-
+MULTI_ClassModifier 
+    : ClassModifier {$$=createNode("multiTypeDeclaration","",{$1});}
+    | MULTI_ClassModifier ClassModifier  {$$=$1; $1->children.push_back($2);}
+    ;
 ClassModifier 
     : PUBLIC { $$ = createNode("Keyword", $1, {} ); }
     | PRIVATE { $$ = createNode("Keyword", $1, {} ); }
+    | STATIC {$$ = createNode("Keyword", $1, {} ); }
     ;
 VariableDeclaratorList 
     : VariableDeclaratorList ',' VariableDeclarator  {$$ = $1;$$->children.push_back($3);Node * temp2 = createNode("Separator",$2,{}); $$->children.push_back(temp2); }
@@ -223,7 +229,7 @@ VariableDeclaratorList
     ;
 
 VariableDeclarator 
-    : VariableDeclaratorId '=' VariableInitializer {Node * temp2 = createNode("=","",{});$$->children.push_back($3); $$=createNode("VariableDeclarator","",{$1,temp2,$3});} 
+    : VariableDeclaratorId '=' VariableInitializer {Node * temp2 = createNode("=","",{});$$=createNode("VariableDeclarator","",{$1,temp2,$3});} 
     | VariableDeclaratorId {$$=$1;}
     ;   
 VariableDeclaratorId 
@@ -238,7 +244,7 @@ VariableInitializer
 
 
 MethodDeclaration
-    : ClassModifier MethodHeader MethodBody     {$$=createNode("MethodDeclaration","",{$1,$2,$3}); }     
+    : MULTI_ClassModifier MethodHeader MethodBody     {$$=createNode("MethodDeclaration","",{$1,$2,$3}); }     
     | MethodHeader MethodBody                       {$$=createNode("MethodDeclaration","",{$1,$2}); }     
     ;
 
@@ -277,24 +283,19 @@ LastFormalParameter
 
 ReceiverParameter
     : Type THIS                                     { Node *n1 = createNode("THIS", $2, {}); $$ = createNode("ReceiverParameter", "", {$1, n1}); }
-    | Type IDENTIFIER '.' THIS                      { Node *n1 = createNode("THIS", $4, {}); Node *n3 = createNode("Separator", $3, {}); Node *n2 = createNode("ID", $2, {}); $$ = createNode("ReceiverParameter", "", {$1, n2, n1,n3}); }
+    | Type IDENTIFIER '.' THIS                      { Node *n1 = createNode("THIS", $4, {}); Node *n3 = createNode("Separator", $3, {}); Node *n2 = createNode("Identifier", $2, {}); $$ = createNode("ReceiverParameter", "", {$1, n2, n1,n3}); }
     ;
 
 MethodBody
     : Block                                         {$$ = $1; }
     | ';'                                           {$$ = createNode("EMP", "", {}); }
     ;
-
-InstanceInitializer
-    : Block                                         { $$ = $1; }
-    ;
-
 StaticInitializer
     : STATIC Block                                  { Node * n1 = createNode("KEYWORD", $1, {});$$ = createNode("StaticInitializer","", {n1,$2}); } 
     ;
 
 ConstructorDeclaration
-    : ClassModifier ConstructorDeclarator ConstructorBody            { $$ = $2; $$->children.push_back($1); $$->children.push_back($3);  }
+    : MULTI_ClassModifier ConstructorDeclarator ConstructorBody            { $$ = $2; $$->children.push_back($1); $$->children.push_back($3);  }
     | ConstructorDeclarator ConstructorBody                                { $$ = $1; $$->children.push_back($2); }
     ;
 
@@ -532,19 +533,19 @@ ClassInstanceCreationExpression
 
 UnqualifiedClassInstanceCreationExpression
     : NEW TypeName '(' ArgumentList ')'                                                 {Node *temp = createNode("KEYWORD",$1,{});
-                                                                                        Node *temp1 = createNode("Separator",$3,{});Node *temp2 = createNode("Separator",$5,{});$$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,$4,temp1,temp2});}
+                                                                                        Node *temp1 = createNode("Separator",$3,{});Node *temp2 = createNode("Separator",$5,{});$$ = createNode("unqualifiedClassInstance","",{temp,$2,$4,temp1,temp2});}
     | NEW TypeName '(' ArgumentList ')' ClassBody                                       {Node *temp = createNode("KEYWORD",$1,{});Node *temp1 = createNode("Separator",$3,{});Node *temp2= createNode("Separator",$5,{});
-                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,$4,$6,temp1,temp2});}
+                                                                                        $$ = createNode("unqualifiedClassInstance","",{temp,$2,$4,$6,temp1,temp2});}
     | NEW TypeName '(' ')' ClassBody                                                    {Node *temp = createNode("KEYWORD",$1,{});Node *temp1 = createNode("Separator",$3,{});Node *temp2 = createNode("Separator",$4,{});
                             
-                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,temp1,$5,temp2});}
+                                                                                        $$ = createNode("unqualifiedClassInstance","",{temp,$2,temp1,$5,temp2});}
     | NEW TypeName '(' ')'                                                              {Node *temp = createNode("KEYWORD",$1,{});
                                                                                         Node *temp1 = createNode("Separator",$3,{});Node *temp2 = createNode("Separator",$4,{});
-                                                                                        $$ = createNode("UNQUA_CLASS_INSTANCE","",{temp,$2,temp1,temp2});}
+                                                                                        $$ = createNode("unqualifiedClassInstance","",{temp,$2,temp1,temp2});}
     
 
 FieldAccess
-    : Primary '.' IDENTIFIER                                                           {Node *temp = createNode("ID",$3,{});Node *temp1 = createNode("Separator",$2,{});
+    : Primary '.' IDENTIFIER                                                           {Node *temp = createNode("Identifier",$3,{});Node *temp1 = createNode("Separator",$2,{});
                                                                                         $$ = createNode("FIELDACC","",{$1,temp,temp1});}
     ;
 
@@ -556,7 +557,7 @@ ArrayAccess
 MethodInvocation
     : IDENTIFIER '(' ArgumentList ')'                                                  {Node *temp = createNode("Identifier",$1,{});Node *temp1 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$4,{});
                                                                                         $$=createNode("METHODINVOCATION","",{temp,$3,temp1,temp2});}
-    | IDENTIFIER '(' ')'                                                               {Node *temp = createNode("ID",$1,{});Node *temp3 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$3,{});
+    | IDENTIFIER '(' ')'                                                               {Node *temp = createNode("Identifier",$1,{});Node *temp3 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$3,{});
                                                                                        
                                                                                         $$=createNode("METHODINVOCATION","",{temp,temp2,temp3});}
     | TypeName '.' IDENTIFIER '(' ArgumentList ')'
@@ -580,9 +581,9 @@ ArgumentList
 MethodReference
    : TypeName PROPORTION IDENTIFIER          {Node *temp = createNode("Identifier",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
                                                                                          $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
-   | ArrayType PROPORTION IDENTIFIER                                                    {Node *temp = createNode("ID",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
+   | ArrayType PROPORTION IDENTIFIER                                                    {Node *temp = createNode("Identifier",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
                                                                                          $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
-   | Primary PROPORTION IDENTIFIER                                                      {Node *temp = createNode("ID",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
+   | Primary PROPORTION IDENTIFIER                                                      {Node *temp = createNode("Identifier",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
                                                                                          $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
    |  TypeName PROPORTION NEW                                     {Node *temp = createNode("KEYWORD",$3,{});Node *temp1 = createNode("KEYWORD",$2,{});
                                                                                          $$ = createNode("METHOD_REF","",{$1,temp,temp1});}
@@ -625,7 +626,7 @@ AssignmentExpression
 
 Assignment
    : LeftHandSide AssignmentOperator Expression                                         {$2->children={$1,$3};$$=$2;}
-   |  TypeName AssignmentOperator Expression                 {$2->children={$1,$3};$$=$2;}
+   | TypeName AssignmentOperator Expression                 {$2->children={$1,$3};$$=$2;}
    ;
 
 LeftHandSide
@@ -634,18 +635,18 @@ LeftHandSide
    ;
 
 AssignmentOperator
-   : '='                                                                                {$$=createNode("OP",$1,{});}
-   | MUL_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-   | DIV_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-   | MOD_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-   | ADD_ASSIGN                                                                         {$$=createNode("OP",$1,{});}                                                                               
-   | SUB_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-   | LEFT_ASSIGN                                                                        {$$=createNode("OP",$1,{});}
-   | RIGHT_ASSIGN                                                                       {$$=createNode("OP",$1,{});}
-   | UNSIGNED_RIGHT_ASSIGN                                                              {$$=createNode("OP",$1,{});}
-   | AND_ASSIGN                                                                         {$$=createNode("OP",$1,{});}  
-   | XOR_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-   | OR_ASSIGN                                                                          {$$=createNode("OP",$1,{});}
+   : '='                                                                                {$$=createNode("operator",$1,{});}
+   | MUL_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
+   | DIV_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
+   | MOD_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
+   | ADD_ASSIGN                                                                         {$$=createNode("operator",$1,{});}                                                                               
+   | SUB_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
+   | LEFT_ASSIGN                                                                        {$$=createNode("operator",$1,{});}
+   | RIGHT_ASSIGN                                                                       {$$=createNode("operator",$1,{});}
+   | UNSIGNED_RIGHT_ASSIGN                                                              {$$=createNode("operator",$1,{});}
+   | AND_ASSIGN                                                                         {$$=createNode("operator",$1,{});}  
+   | XOR_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
+   | OR_ASSIGN                                                                          {$$=createNode("operator",$1,{});}
    ;
 
 ConditionalExpression
@@ -655,90 +656,90 @@ ConditionalExpression
 
 ConditionalOrExpression
     : ConditionalAndExpression                                                          {$$=$1;}
-   | ConditionalOrExpression OR_OP ConditionalAndExpression                             {$$=createNode("OP",$2,{$1,$3});}
+   | ConditionalOrExpression OR_OP ConditionalAndExpression                             {$$=createNode("operator",$2,{$1,$3});}
    ;
 
 ConditionalAndExpression
    : InclusiveOrExpression                                                              {$$=$1;}                                                                                                                                                                                                                           
-   | ConditionalAndExpression AND_OP InclusiveOrExpression                              {$$=createNode("OP",$2,{$1,$3});}                                                                                                                                                               
+   | ConditionalAndExpression AND_OP InclusiveOrExpression                              {$$=createNode("operator",$2,{$1,$3});}                                                                                                                                                               
    ;
 
 InclusiveOrExpression
    : ExclusiveOrExpression                                                              {$$=$1;}                                        
-   | InclusiveOrExpression '|' ExclusiveOrExpression                                    {$$=createNode("OP",$2,{$1,$3});}                                                                        
+   | InclusiveOrExpression '|' ExclusiveOrExpression                                    {$$=createNode("operator",$2,{$1,$3});}                                                                        
    ;
 
 ExclusiveOrExpression
    : AndExpression                                                                      {$$=$1;}                              
-   | ExclusiveOrExpression '^' AndExpression                                            {$$=createNode("OP",$2,{$1,$3});}                                                               
+   | ExclusiveOrExpression '^' AndExpression                                            {$$=createNode("operator",$2,{$1,$3});}                                                               
    ;
 
 AndExpression
    : EqualityExpression                                                                 {$$=$1;}                                  
-   | AndExpression '&' EqualityExpression                                               {$$=createNode("OP",$2,{$1,$3});}                                                           
+   | AndExpression '&' EqualityExpression                                               {$$=createNode("operator",$2,{$1,$3});}                                                           
    ;
 
 EqualityExpression
    : RelationalExpression                                                               {$$=$1;}
-   | EqualityExpression EQ_OP RelationalExpression                                      {$$=createNode("OP",$2,{$1,$3});}
-   | EqualityExpression NE_OP RelationalExpression                                      {$$=createNode("OP",$2,{$1,$3});}
+   | EqualityExpression EQ_OP RelationalExpression                                      {$$=createNode("operator",$2,{$1,$3});}
+   | EqualityExpression NE_OP RelationalExpression                                      {$$=createNode("operator",$2,{$1,$3});}
    ;
 
 RelationalExpression
    : ShiftExpression                                                                    {$$=$1;}
-   | RelationalExpression '<' ShiftExpression                                           {$$=createNode("OP",$2,{$1,$3});}
-   | RelationalExpression '>' ShiftExpression                                           {$$=createNode("OP",$2,{$1,$3});}
-   | RelationalExpression LE_OP ShiftExpression                                         {$$=createNode("OP",$2,{$1,$3});}
-   | RelationalExpression GE_OP ShiftExpression                                         {$$=createNode("OP",$2,{$1,$3});}
-   | RelationalExpression INSTANCEOF ReferenceType                                      {$$=createNode("OP",$2,{$1,$3});}
+   | RelationalExpression '<' ShiftExpression                                           {$$=createNode("operator",$2,{$1,$3});}
+   | RelationalExpression '>' ShiftExpression                                           {$$=createNode("operator",$2,{$1,$3});}
+   | RelationalExpression LE_OP ShiftExpression                                         {$$=createNode("operator",$2,{$1,$3});}
+   | RelationalExpression GE_OP ShiftExpression                                         {$$=createNode("operator",$2,{$1,$3});}
+   | RelationalExpression INSTANCEOF ReferenceType                                      {$$=createNode("operator",$2,{$1,$3});}
    ;
 
 ShiftExpression
    : AdditiveExpression                                                                 {$$=$1;}
-   | ShiftExpression LEFT_OP  AdditiveExpression                                        {$$=createNode("OP",$2,{$1,$3});}
-   | ShiftExpression RIGHT_OP AdditiveExpression                                        {$$=createNode("OP",$2,{$1,$3});}
-   | ShiftExpression UNSIGNED_RIGHT_OP AdditiveExpression                               {$$=createNode("OP",$2,{$1,$3});}
+   | ShiftExpression LEFT_OP  AdditiveExpression                                        {$$=createNode("operator",$2,{$1,$3});}
+   | ShiftExpression RIGHT_OP AdditiveExpression                                        {$$=createNode("operator",$2,{$1,$3});}
+   | ShiftExpression UNSIGNED_RIGHT_OP AdditiveExpression                               {$$=createNode("operator",$2,{$1,$3});}
    ;
 
 AdditiveExpression
    : MultiplicativeExpression                                                           {$$=$1;}
-   | AdditiveExpression '+' MultiplicativeExpression                                    {$$=createNode("OP",$2,{$1,$3});}
-   | AdditiveExpression '-' MultiplicativeExpression                                    {$$=createNode("OP",$2,{$1,$3});}
+   | AdditiveExpression '+' MultiplicativeExpression                                    {$$=createNode("operator",$2,{$1,$3});}
+   | AdditiveExpression '-' MultiplicativeExpression                                    {$$=createNode("operator",$2,{$1,$3});}
    ;
 
 MultiplicativeExpression
    : UnaryExpression                                                                    {$$=$1;}
-   | MultiplicativeExpression '*' UnaryExpression                                       {$$=createNode("OP",$2,{$1,$3});}                 
-   | MultiplicativeExpression '/' UnaryExpression                                       {$$=createNode("OP",$2,{$1,$3});}
-   | MultiplicativeExpression '%' UnaryExpression                                       {$$=createNode("OP",$2,{$1,$3});}
+   | MultiplicativeExpression '*' UnaryExpression                                       {$$=createNode("operator",$2,{$1,$3});}                 
+   | MultiplicativeExpression '/' UnaryExpression                                       {$$=createNode("operator",$2,{$1,$3});}
+   | MultiplicativeExpression '%' UnaryExpression                                       {$$=createNode("operator",$2,{$1,$3});}
    ;
 
 UnaryExpression
    : PreIncrementExpression                                                             {$$=$1;}
    | PreDecrementExpression                                                             {$$=$1;}
-   | '+' UnaryExpression                                                                {Node * temp = createNode("OP",$1,{});
-                                                                                         $$=createNode("UOP","",{temp,$2});}
-   | '-' UnaryExpression                                                                {Node * temp = createNode("OP",$1,{});
-                                                                                         $$=createNode("UOP","",{temp,$2});}
+   | '+' UnaryExpression                                                                {Node * temp = createNode("operator",$1,{});
+                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
+   | '-' UnaryExpression                                                                {Node * temp = createNode("operator",$1,{});
+                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
    | UnaryExpressionNotPlusMinus                                                        {$$=$1;}
    ;
 
 PreIncrementExpression
-   : INC_OP UnaryExpression                                                             {Node * temp = createNode("OP",$1,{});
-                                                                                         $$=createNode("UOP","",{temp,$2});}
+   : INC_OP UnaryExpression                                                             {Node * temp = createNode("operator",$1,{});
+                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
    ;
 
 PreDecrementExpression
-   : DEC_OP UnaryExpression                                                             {Node * temp = createNode("OP",$1,{});
-                                                                                         $$=createNode("UOP","",{temp,$2});}
+   : DEC_OP UnaryExpression                                                             {Node * temp = createNode("operator",$1,{});
+                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
    ;
 
 UnaryExpressionNotPlusMinus
    : PostfixExpression                                                                  {$$=$1;}
-   | '~' UnaryExpression                                                                {Node * temp = createNode("OP",$1,{});
-                                                                                         $$=createNode("UOP","",{temp,$2});}
-   | '!' UnaryExpression                                                                {Node * temp = createNode("OP",$1,{});
-                                                                                         $$=createNode("UOP","",{temp,$2});}
+   | '~' UnaryExpression                                                                {Node * temp = createNode("operator",$1,{});
+                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
+   | '!' UnaryExpression                                                                {Node * temp = createNode("operator",$1,{});
+                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
    | CastExpression                                                                     {$$=$1;}
    ;
 
@@ -750,208 +751,18 @@ PostfixExpression
    ;
 
 PostIncrementExpression
-   : PostfixExpression INC_OP                                                           {Node * temp = createNode("OP",$2,{});
-                                                                                         $$=createNode("UOP","",{$1,temp});}
+   : PostfixExpression INC_OP                                                           {Node * temp = createNode("operator",$2,{});
+                                                                                         $$=createNode("unaryOperator","",{$1,temp});}
    ;
 
 PostDecrementExpression
-   : PostfixExpression DEC_OP                                                           {Node * temp = createNode("OP",$2,{});
-                                                                                         $$=createNode("UOP","",{$1,temp});}
+   : PostfixExpression DEC_OP                                                           {Node * temp = createNode("operator",$2,{});
+                                                                                         $$=createNode("unaryOperator","",{$1,temp});}
    ;
 
 CastExpression
    : '(' PrimitiveType ')' UnaryExpression                                              {Node * temp1 = createNode("Separator",$1,{});Node * temp3 = createNode("Separator",$3,{});$$=createNode("TYPECAST","",{$2,$4,temp1,temp3});}
    ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ArrayType : TypeName '[' ']'     { $$ = $1;Node *temp = createNode("","[]",{}); $$->children.push_back(temp);}
-//           | ArrayType '[' ']'    { Node* l = createNode("ARRAY", $3, {}); $1->children.push_back(l); $$ = $1; }
-//           ;
-
-/* production 8 */
-// ClassDeclaration 
-//    : CLASS IDENTIFIER ClassBody {Node *temp1=createNode("Keyword",$1,{});Node *temp2=createNode("Identifier",$2,{});$$=createNode("normalClassDeclaration","",{temp1,temp2,$3});}     
-//    ;
-// ClassBody
-//    : '{' ClassBodyDeclaration '}'  {Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("classBody","",{temp1,$2,temp3});} 
-//    | '{' '}'  {Node *temp1=createNode("Separator",$1,{});Node *temp2=createNode("Separator",$2,{}); Node *temp3=createNode("fieldDeclaration","",{});$$=createNode("classBody","",{temp1,temp2});} 
-//    ;
-// ClassBodyDeclaration 
-//    : ClassMemberDeclaration {$$=$1;}
-// //    | InstanceInitializer   {$$=$1;}
-// //    | StaticInitializer     {$$=$1;}
-// //    | ConstructorDeclaration   {$$=$1;}
-//    ;
-// ClassMemberDeclaration
-//     : FieldDeclaration {$$=$1;}
-//     // | MethodDeclaration
-//     // | ClassDeclaration
-//     // | InterfaceDeclaration
-//     ;
-// FieldDeclaration
-//     : ClassModifier Type VariableDeclaratorList ';' {Node * temp4 =createNode("Separator",$4,{});$$=createNode("fieldDeclaration","",{$1,$2,$3,temp4});}
-//     | Type VariableDeclaratorList ';' {Node * temp3 =createNode("Separator",$3,{});$$=createNode("fieldDeclaration","",{$1,$2,temp3});}
-//     ;
-// ClassModifier 
-//     : PUBLIC { $$ = createNode("Keyword", $1, {} ); }
-//     | PRIVATE { $$ = createNode("Keyword", $1, {} ); }
-//     ;
-// VariableDeclaratorList 
-//     // : VariableDeclaratorList ',' VariableDeclarator  {$$ = ; Node * temp2 = createNode("Separator",$2,{}); Node * temp3 = createNode("")}
-//     : VariableDeclarator {$$=$1;}
-//     ;
-// VariableDeclarator 
-//     : VariableDeclaratorId '=' VariableInitializer {Node * temp2 = createNode("=","",{}); $$=createNode("VariableDeclarator","",{$1,temp2,$3});} 
-//     | VariableDeclaratorId {$$=$1;}
-//     ;   
-// VariableDeclaratorId 
-//     : IDENTIFIER  {$$=createNode("Identifier",$1,{});}
-//     ;
-// VariableInitializer
-//    : Expression { $$=$1;}
-//    ;
-// Expression 
-//    : AssignmentExpression { $$=$1;}
-//    ;
-// AssignmentExpression
-//    : Assignment {$$=$1;}
-// // :  ConditionalExpression
-//    ;
-
-// Assignment 
-//    : LeftHandSide AssignmentOperator Expression {$$=$2;$2->children.push_back($1);$2->children.push_back($3);}
-//    | TypeName AssignmentOperator Expression {$$=$2;$2->children.push_back($1);$2->children.push_back($3);}
-//    ;
-
-// LeftHandSide 
-//    : FieldAccess {$$=$1;}
-//    ;
-// FieldAccess 
-//    : Primary '.' IDENTIFIER {Node *temp1=createNode('Separator',$2,{});Node *temp2=createNode('Identifier',$3,{});$$=createNode("fieldAccess","",{$1,temp2,temp3});}
-//    ;
-
-// Primary
-//    : PrimaryNoNewArray {$$=$1;}
-// //    | ArrayCreationExpression
-//    ;
-// PrimaryNoNewArray 
-//    : LITERAL {$$=createNode("Literal",$1,{});}
-//    | ClassLiteral {$$=$1;}
-//    | THIS {$$=createNode("Keyword",$1,{});}
-//    | TypeName '.' THIS {Node *temp1=createNode('Separator',$2,{}); Node *temp2=createNode('Separator',$3,{});$$=createNode("primaryNoNewArray","",{$1,temp1,temp2});}
-//    | '(' Expression ')' {Node *temp1=createNode('Separator',$1,{}); Node *temp3=createNode('Separator',$3,{});$$=createNode("primaryNoNewArray","",{temp1,$2,temp3});}
-// //    | ClassInstanceCreationExpression
-//    | FieldAccess {$$=$1;}
-// //    | ArrayAccess
-//    | MethodInvocation {$$=$1;}
-//    | MethodReference {$$=$1;}
-//    ;
-// ClassLiteral
-//    : TypeName '.' CLASS
-//    | PrimitiveType '.' CLASS
-//    | VOID '.' CLASS
-//    ;
-
-// MethodInvocation 
-//    : IDENTIFIER '(' ArgumentList ')'
-//    | IDENTIFIER '(' ')'
-//    | TypeName '.' IDENTIFIER '(' ArgumentList ')'
-//    | TypeName '.' IDENTIFIER '(' ')'
-//    | Primary '.' IDENTIFIER '(' ArgumentList ')'
-//    | Primary '.' IDENTIFIER '(' ')'
-//    ;
-
-// ArgumentList 
-//    : ArgumentList ',' Expression
-//    | Expression
-//    ;
-
-// MethodReference 
-//    : TypeName PROPORTION IDENTIFIER
-// //    | ArrayType PROPORTION IDENTIFIER
-//    | Primary PROPORTION IDENTIFIER
-//    ;
-
-// AssignmentOperator 
-//    : '='                                                                                {$$=createNode("OP",$1,{});}
-//    | MUL_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-//    | DIV_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-//    | MOD_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-//    | ADD_ASSIGN                                                                         {$$=createNode("OP",$1,{});}                                                                               
-//    | SUB_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-//    | LEFT_ASSIGN                                                                        {$$=createNode("OP",$1,{});}
-//    | RIGHT_ASSIGN                                                                       {$$=createNode("OP",$1,{});}
-//    | UNSIGNED_RIGHT_ASSIGN                                                              {$$=createNode("OP",$1,{});}
-//    | AND_ASSIGN                                                                         {$$=createNode("OP",$1,{});}  
-//    | XOR_ASSIGN                                                                         {$$=createNode("OP",$1,{});}
-//    | OR_ASSIGN                                                                          {$$=createNode("OP",$1,{});}
-//    ;
-
- 
-
 
 
 
