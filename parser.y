@@ -123,7 +123,7 @@ TypeName : IDENTIFIER                  { $$ = createNode("Identifier",$1, {}); }
 Type
     : PrimitiveType             { $$ = $1; }
     | ReferenceType             { $$ = $1; }
-    | ArrayType                 { $$ = $1; }
+    // | ArrayType                 { $$ = $1; }
     ;
 
 PrimitiveType
