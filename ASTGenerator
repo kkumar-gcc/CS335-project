@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Parse arguments
+for arg in "$@"; do
+  case $arg in
+    -input=*)
+      input="${arg#*=}"
+      shift
+      ;;
+    -output=*)
+      output="${arg#*=}"
+      shift
+      ;;
+    *)
+      echo "Invalid argument: $arg"
+      exit 1
+      ;;
+  esac
+done
+
+# Check if input and output files are specified
+if [ -z "$input" ] || [ -z "$output" ]; then
+  echo "Usage: $0 -input=<input_file> -output=<output_file>"
+  exit 1
+fi
+
+# Compile
+make
+
+# Parse input file and generate dot file
+./parser < "$input" > $output
+
+# Convert dot file to PostScript file
+dot -Tps $output -o "${output%.*}.ps"
+
+# Open PostScript file
+xdg-open "${output%.*}.ps"
+
+# Clean up dot file
+# rm $output
