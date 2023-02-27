@@ -108,7 +108,7 @@ InputCharacterNotBackSlashNotSingleQuote [^\n\r\\']
 
 Comment					\/\/.*|\/\*([^\*]*(\*+[^\*\/]+)*)*\**\*\/
 
-Literal					{IntegerLiteral}|{FloatingPointLiteral}|{BooleanLiteral}|{CharacterLiteral}|{StringLiteral}|{NullLiteral}
+Literal					{IntegerLiteral}|{FloatingPointLiteral}|{BooleanLiteral}|{CharacterLiteral}|{NullLiteral}
 
 IntegerLiteral 			{DecimalIntegerLiteral}|{HexIntegerLiteral}|{OctalIntegerLiteral}|{BinaryIntegerLiteral}
 DecimalIntegerLiteral	{DecimalNumeral}({IntegerTypeSuffix})?
@@ -265,6 +265,7 @@ Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 
 {Comment}				{ for(int i = 0; i<yyleng; ++i) if(yytext[i] == '\n') line++; /* comments, meant to be ignored */}
 {Literal}				{yylval.str=strdup(yytext); return LITERAL;}
+{StringLiteral}	{yylval.str=strdup(yytext); return STRINGLITERAL;}
 {Identifier}			{yylval.str=strdup(yytext); return IDENTIFIER;}
 .					{ cerr<<line<<": error :: Illegal Character >>> "<<yytext<<"\n"; exit(-1); }
 

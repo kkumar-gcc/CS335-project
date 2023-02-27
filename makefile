@@ -1,11 +1,29 @@
-parser: lex.yy.c parser.tab.c
-	g++ -std=c++11 lex.yy.c parser.tab.c -o parser
+# Compiler settings
+LEX = lex
+YACC = bison
+CC = g++
 
-lex.yy.c: parser.tab.c lexer.l
-	flex lexer.l
+# Target executable name
+TARGET = parser
 
+# Phony targets
+.PHONY: all clean
+
+# Default target
+all: $(TARGET)
+
+# Target executable depends on lexer and parser
+$(TARGET): lex.yy.c parser.tab.c
+	$(CC) -o $@ $^
+
+# Generate lexer from lexer.l file
+lex.yy.c: lexer.l
+	$(LEX) -o $@ $<
+
+# Generate parser from parser.y file
 parser.tab.c: parser.y
-	bison -d parser.y
+	$(YACC) -d -o $@ $<
 
-clean: 
-	rm -rf lex.yy.c parser.tab.c parser.tab.h parser parser.dSYM
+# Clean up generated files
+clean:
+	$(RM) $(TARGET) lex.yy.c parser.tab.c parser.tab.h parser

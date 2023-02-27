@@ -42,7 +42,7 @@ Node *createNode(string label, string value, vector <Node *> children) {
 %token <str> CLASS LONG
 %token <str> CONST FLOAT WHILE
 
-%token <str> LITERAL IDENTIFIER
+%token <str> LITERAL IDENTIFIER STRINGLITERAL
 
 
 %right <str> '=' ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN AND_ASSIGN OR_ASSIGN XOR_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN UNSIGNED_RIGHT_ASSIGN
@@ -509,6 +509,7 @@ PrimaryNoNewArray
     | ArrayAccess                                                                   {$$=$1;}
     | MethodInvocation                                                              {$$=$1;}
     | MethodReference                                                               {$$=$1;}
+    | STRINGLITERAL                                                                 {$$=createNode("LITERAL",$1,{});}
     ;
 
 ClassLiteral
@@ -778,9 +779,9 @@ void dfs(Node* head, int head_num){
         string temp = (u->value)[0]=='"' ? "\\"+(u->value).substr(0,(u->value).size()-1)+"\\\"" : u->value;
     
         string val =  (u->value).empty() ? u->label : u->label+"__"+u->value;
-        string shape =  ", shape = box" ;
-        string color = ", color=lightblue style=filled";
-        cout << counter << " [label = \""+val+"\""+shape+color+"];\n";
+        string shape =  ", shape = ellipse" ;
+        // string color = ", color=lightblue style=filled";
+        cout << counter << " [label = \""+val+"\""+shape+"];\n";
         cout << head_num << "->" << counter << " [ ];\n";
         counter++;
         dfs(u,counter-1);
@@ -793,9 +794,9 @@ void generate_dot(){
     cout << "digraph G {" << '\n' << "size=\"7,15\"; center = true; ";
     string temp = (root->value)[0]=='"' ? "\\"+(root->value).substr(0,(root->value).size()-1)+"\\\"" : root->value;
     string val = (root->value).empty() ? root->label : root->label+"__"+temp;
-    string shape = (root->value).empty() ? ", shape = box" : "";
+    // string shape = (root->value).empty() ? ", shape = box" : "";
     string color = (root->value).empty() ? "" : ", color=lightblue, style=filled";
-    cout << "1 [label = \""+val+"\""+shape+color+"];\n";
+    cout << "1 [label = \""+val+"\""+color+"];\n";
     dfs(root,1);
     cout << "}";
 }
