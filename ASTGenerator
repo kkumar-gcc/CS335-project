@@ -34,7 +34,7 @@ make
 dot -Tps $output -o "${output%.*}.ps"
 
 # Open PostScript file
-xdg-open "${output%.*}.ps"
+# xdg-open "${output%.*}.ps"
 
 # Clean up dot file
 rm $output

@@ -23,7 +23,7 @@ Node *createNode(string label, string value, vector <Node *> children) {
     return newNode;
 }
 %}
-
+%define parse.error verbose
 %union{
     char *str;
     Node *node;
@@ -818,4 +818,4 @@ int main (void) {
     return 1;
 }
 
-void yyerror (const char *s) {cerr<<"Line "<<line<<": "<<s;}
+void yyerror (const char *str) {cerr<<"Line "<<line<<": "<<str<<endl;}
