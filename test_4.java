@@ -1,6 +1,11 @@
 public class test_4 {
     // Program with loops:
     public static void main(String[] args) {
+        String array[] = {"Ron", "Harry", "Hermoine"}; 
+		for (String x:array) 
+		{ 
+			System.out.println(x); 
+		} 
         for (int i = 1; i <= 5; i++) {
             System.out.println("Value of i: " + i);
         }
@@ -9,10 +14,5 @@ public class test_4 {
             System.out.println("Value of j: " + j);
             j++;
         }
-        int k = 1;
-        do {
-            System.out.println("Value of k: " + k);
-            k++;
-        } while (k <= 5);
     }
 }

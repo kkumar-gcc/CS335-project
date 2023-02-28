@@ -4,14 +4,8 @@ class Animal {
     }
 }
 
-class Dog extends Animal {
-    public void bark() {
-        System.out.println("Dog is barking");
-    }
-}
-
 public class test_6 {
-    // Program with classes, objects, and inheritance:
+    // Program with classes, objects:
     public static void main(String[] args) {
         Dog dog = new Dog();
         dog.eat();
