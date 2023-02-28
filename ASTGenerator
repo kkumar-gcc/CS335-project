@@ -1,40 +1,96 @@
+
 #!/bin/bash
 
-# Parse arguments
-for arg in "$@"; do
-  case $arg in
-    -input=*)
-      input="${arg#*=}"
-      shift
-      ;;
-    -output=*)
-      output="${arg#*=}"
-      shift
-      ;;
-    *)
-      echo "Invalid argument: $arg"
-      exit 1
-      ;;
-  esac
+# Default options
+input=""
+output=""
+help=0
+verbose=0
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -input)
+            input="$2"
+            shift
+            shift
+            ;;
+        -output)
+            output="$2"
+            shift
+            shift
+            ;;
+        -help)
+            help=1
+            shift
+            ;;
+        -verbose)
+            verbose=1
+            shift
+            ;;
+        *)
+            echo "Invalid option: $1"
+            echo "Usage: $0 [-input <input_file>] [-output <output_file>] [-help] [-verbose]"
+            exit 1
+            ;;
+    esac
 done
 
-# Check if input and output files are specified
-if [ -z "$input" ] || [ -z "$output" ]; then
-  echo "Usage: $0 -input=<input_file> -output=<output_file>"
-  exit 1
+# Display help message
+if [[ $help -eq 1 ]]; then
+    echo "Usage: $0 [-input <input_file>] [-output <output_file>] [-help] [-verbose]"
+    echo ""
+    echo "Options:"
+    echo "  -input <input_file>   : Input file to process"
+    echo "  -output <output_file> : Output file to generate"
+    echo "  -help                 : Display this help message"
+    echo "  -verbose              : Display verbose output"
+    exit 0
+fi
+
+# Check input file
+if [[ -z "$input" ]]; then
+    echo "Input file not specified"
+    echo "Usage: $0 [-input <input_file>] [-output <output_file>] [-help] [-verbose]"
+    exit 1
+elif [[ ! -f "$input" ]]; then
+    echo "Input file '$input' not found"
+    exit 1
+fi
+
+# Check output file
+if [[ -z "$output" ]]; then
+    echo "Output file not specified"
+    echo "Usage: $0 [-input <input_file>] [-output <output_file>] [-help] [-verbose]"
+    exit 1
 fi
 
 # Compile
+if [[ $verbose -eq 1 ]]; then
+    echo "Compiling..."
+fi
 make
 
 # Parse input file and generate dot file
-./parser < "$input" > $output
+if [[ $verbose -eq 1 ]]; then
+    echo "Parsing input file..."
+fi
+./parser < "$input" > "$output"
 
 # Convert dot file to PostScript file
-dot -Tps $output -o "${output%.*}.ps"
+if [[ $verbose -eq 1 ]]; then
+    echo "Converting dot file to PostScript..."
+fi
+dot -Tps "$output" -o "${output%.dot}.ps"
 
 # Open PostScript file
-xdg-open "${output%.*}.ps"
+if [[ $verbose -eq 1 ]]; then
+    echo "Opening PostScript file..."
+fi
+xdg-open "${output%.dot}.ps"
 
 # Clean up dot file
+if [[ $verbose -eq 1 ]]; then
+    echo "Cleaning up..."
+fi
 rm $output
