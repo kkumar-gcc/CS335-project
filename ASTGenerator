@@ -37,4 +37,4 @@ dot -Tps $output -o "${output%.*}.ps"
 xdg-open "${output%.*}.ps"
 
 # Clean up dot file
-# rm $output
+rm $output

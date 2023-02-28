@@ -1,7 +1,7 @@
 package animals;
 /* File name : MammalInt.java */
 
-public class MammalInt implements Animal {
+public class MammalInt{
 
    public void eat() {
       System.out.println("Mammal eats");

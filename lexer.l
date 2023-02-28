@@ -9,7 +9,6 @@ extern "C" int yylex();
 
 using namespace std;
 
-int error = 0;
 long long int line = 1;
 	
 %}
@@ -93,82 +92,46 @@ LeftSmallBrace "("
 RightSmallBrace ")"
 Comma ","
 DoubleColon "::"
-TripleDot "..."
 FullStop "."
 SemiColon ";"
 
-
-
-
-HexDigit                [0-9a-fA-F]
-
-InputCharacterNotBackSlashNotDoubleQuote [^\n\r\\"]
-InputCharacterNotBackSlashNotSingleQuote [^\n\r\\']
-
-
 Comment					\/\/.*|\/\*([^\*]*(\*+[^\*\/]+)*)*\**\*\/
 
-Literal					{IntegerLiteral}|{FloatingPointLiteral}|{BooleanLiteral}|{CharacterLiteral}|{NullLiteral}
+Literal					{IntegerLiteral}|{FloatingPointLiteral}|"true"|"false"|null|{CharacterLiteral}
 
 IntegerLiteral 			{DecimalIntegerLiteral}|{HexIntegerLiteral}|{OctalIntegerLiteral}|{BinaryIntegerLiteral}
-DecimalIntegerLiteral	{DecimalNumeral}({IntegerTypeSuffix})?
-HexIntegerLiteral		{HexNumeral}({IntegerTypeSuffix})?
-OctalIntegerLiteral		{OctalNumeral}({IntegerTypeSuffix})?
-BinaryIntegerLiteral	{BinaryNumeral}({IntegerTypeSuffix})?
-IntegerTypeSuffix		"l"|"L"
+DecimalIntegerLiteral	{DecimalNumeral}([lL])?
+HexIntegerLiteral		(0[xX]){HexDigits}([lL])?
+OctalIntegerLiteral		{OctalNumeral}([lL])?
+BinaryIntegerLiteral	{BinaryNumeral}([lL])?
 
-DecimalNumeral			0|{NonZeroDigit}({Digits})?|{NonZeroDigit}{Underscores}{Digits}
-NonZeroDigit			[1-9]
-Digits					{Digit}|{Digit}({DigitAndUnderscores})?{Digit}
-DigitsForFloat			{NonZeroDigit}|{NonZeroDigit}({DigitAndUnderscores})?{Digit}
-Digit 					0|{NonZeroDigit}
-DigitAndUnderscores		({DigitOrUnderscores})+
-DigitOrUnderscores		{Digit}|"_"
-Underscores 			[_]+
+DecimalNumeral			0|[1-9]({Digits})?|[1-9][_]+{Digits}
+Digits					[0-9]|[0-9](([0-9_])+)?[0-9]
+DigitsForFloat			[1-9]|[1-9](([0-9_])+)?[0-9]
 
-HexNumeral				("0x"|"0X"){HexDigits}
-HexDigits				{HexDigit}|{HexDigit}({HexDigitAndUnderscores})?{HexDigit}
-HexDigitAndUnderscores 	({HexDigitOrUnderscores})+
-HexDigitOrUnderscores	{HexDigit}|"_"
+HexDigits				[0-9a-fA-F]|[0-9a-fA-F](([0-9a-fA-F_])+)?[0-9a-fA-F]
 
-OctalNumeral			0{OctalDigits}|0{Underscores}{OctalDigits}
-OctalDigits				{OctalDigit}|{OctalDigit}({OctalDigitAndUnderscores})?{OctalDigit}
-OctalDigit 				[0-7]
-OctalDigitAndUnderscores ({OctalDigitOrUnderscores})+
-OctalDigitOrUnderscores	OctalDigit|"_"
+OctalNumeral			0{OctalDigits}|0[_]+{OctalDigits}
+OctalDigits				[0-7]|[0-7](([0-7_])+)?[0-7]
+
 
 BinaryNumeral 			("0b"|"0B"){BinaryDigits}
-BinaryDigits			{BinaryDigit}|{BinaryDigit}({BinaryDigitAndUnderscores})?{BinaryDigit}
-BinaryDigit 			[01]
-BinaryDigitAndUnderscores ({BinaryDigitOrUnderscores})+
-BinaryDigitOrUnderscores {BinaryDigit}|"_"
+BinaryDigits			[01]|[01](([01_])+)?[01]
 
 FloatingPointLiteral	{DecimalFloatingPointLiteral}|{HexadecimalFloatingPointLiteral}
 DecimalFloatingPointLiteral	{Digits}"."({Digits})?({ExponentPart})?({FloatTypeSuffix})?|"."{Digits}({ExponentPart})?({FloatTypeSuffix})?|{Digits}{ExponentPart}({FloatTypeSuffix})?|{DigitsForFloat}({ExponentPart})?{FloatTypeSuffix}
-ExponentPart			{ExponentIndicator}{SignedInteger}
-ExponentIndicator		"e"|"E"
-SignedInteger			({Sign})?{Digits}
-Sign 					"+"|"-"
-FloatTypeSuffix			"f"|"F"|"d"|"D"
+ExponentPart			[eE]([+-])?{Digits}
+FloatTypeSuffix			[fFdD]
 
 HexadecimalFloatingPointLiteral	{HexSignificand}{BinaryExponent}({FloatTypeSuffix})?
-HexSignificand			{HexNumeral}[.]?|("0x"|"0X")({HexDigits})?"."{HexDigits}
-BinaryExponent			{BinaryExponentIndicator}{SignedInteger}
-BinaryExponentIndicator	"p"|"P"
-
-BooleanLiteral			"true"|"false"
+HexSignificand			(0[xX]){HexDigits}[.]?|(0[xX])({HexDigits})?"."{HexDigits}
+BinaryExponent			[pP]([+-])?{Digits}
 
 CharacterLiteral		('[^'\\\n]'|'{EscapeSequence}')
 
 StringLiteral			\"([^\"\\\n]|{EscapeSequence})*\"
 
-EscapeSequence			(\\)[btnfr]|{OctalEscape}|"\\\\"|"\\\""|"\\'"
-OctalEscape				(\\)({OctalDigit}|{OctalDigit}{OctalDigit}|{ZeroToThree}{OctalDigit}{OctalDigit})
-ZeroToThree				[0-3]
-
-NullLiteral				null
-
-
+EscapeSequence			(\\)[btnfr]|(\\)([0-7]|[0-7][0-7]|[0-3][0-7][0-7])|"\\\\"|"\\\""|"\\'"
 
 Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 
@@ -178,8 +141,7 @@ Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 %%
 
 [ \t\r\f\b]+ 			;
-[\n\r]					;
-
+[\n] { line++;}
 
 {Boolean} {yylval.str=strdup(yytext); return BOOLEAN;}
 {Break} {yylval.str=strdup(yytext); return BREAK;}
@@ -257,7 +219,6 @@ Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 {RightSmallBrace} {yylval.str=strdup(yytext); return ')';}
 {Comma} {yylval.str=strdup(yytext); return ',';}
 {DoubleColon} {yylval.str=strdup(yytext); return PROPORTION;}
-{TripleDot} {yylval.str=strdup(yytext); return ELLIPSIS;}
 {FullStop} {yylval.str=strdup(yytext); return '.';}
 {SemiColon} {yylval.str=strdup(yytext); return ';';}
 
@@ -267,7 +228,7 @@ Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 {Literal}				{yylval.str=strdup(yytext); return LITERAL;}
 {StringLiteral}	{yylval.str=strdup(yytext); return STRINGLITERAL;}
 {Identifier}			{yylval.str=strdup(yytext); return IDENTIFIER;}
-.					{ cerr<<line<<": error :: Illegal Character >>> "<<yytext<<"\n"; exit(-1); }
+.					{ cerr<<line<<"Error : Illegal Character >>> "<<yytext<<"\n"; exit(-1); }
 
 
 %%

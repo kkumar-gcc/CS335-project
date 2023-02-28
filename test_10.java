@@ -1,11 +1,4 @@
-import javax.swing.*;
-import java.awt.event.*;
-import java.awt.*;
-import java.sql.*;
-import DatabaseDriver.*;
-
-public class UniversalGUI implements ActionListener
-{
+class UniversalGUI{
 	JFrame jframe;
 	DatabaseDriver dd = new DatabaseDriver();
 
@@ -22,24 +15,7 @@ public class UniversalGUI implements ActionListener
 		initFrame();
 	}
 
-
-	public void actionPerformed(ActionEvent ae)
-	{
-		if(ae.getActionCommand().equals("Open"))
-		{
-			try
-			{
-				dd.open(databasename.getText());
-			}
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
-		}
-		
-
-	}
-	public static void main(String args[])throws Exception
+	public static void main(String args[])
 	{
 		new UniversalGUI();
 	}

@@ -1,8 +1,5 @@
-class Test {
-    int a=5;
-
-    public UniversalGUI()
-	{
-		System.out.println(6);
-	}
+public class MyClass {
+    public static void main(String[] args) {
+        int x[] ={2,3,4,5,"hello there!"};
+    }
 }
