@@ -1,32 +1,18 @@
-// Java program to illustrate while loop 
-class LoopDemo 
-{ 
-    public LoopDemo(String Hello){
-		
-	}
-	public static void main(String args[]) 
-	{
-		int x=0; 
-		while (x <= 4)  
-			x++;
-
-		String array[] = {"Ron", "Harry", "Hermoine"}; 
-
-		for (String x:array) 
-		{ 
-			System.out.println(x); 
-		} 
-
-		for (int i = 5; i != 0; i -= 2) 
-        { 
-        } 
-        int x = 5; 
-
-      	while (x < 20)
-      	{ 
-            x++; 
-        } 
-
-	
-	} 
-} 
+public class test_4 {
+    // Program with loops:
+    public static void main(String[] args) {
+        for (int i = 1; i <= 5; i++) {
+            System.out.println("Value of i: " + i);
+        }
+        int j = 1;
+        while (j <= 5) {
+            System.out.println("Value of j: " + j);
+            j++;
+        }
+        int k = 1;
+        do {
+            System.out.println("Value of k: " + k);
+            k++;
+        } while (k <= 5);
+    }
+}

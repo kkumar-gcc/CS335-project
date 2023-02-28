@@ -1,35 +1,16 @@
-class IfStatementDemo 
-{ 
-    boolean l= true;
-	public static void main(String args[]) 
-	{
-		int i = 10; 
-  
-        if (i < 15) 
-            i=i+1; 
-			
-		if (i == 4) { 
-            i++; 
-            System.out.println(str); 
+public class test_5 {
+    // Program with arrays:
+    public static void main(String[] args) {
+        int[] numbers = {1, 2, 3, 4, 5};
+        for (int i = 0; i < numbers.length; i++) {
+            System.out.println("Value at index " + i + ": " + numbers[i]);
         }
-
-        if (i < 15) {
-        	int a = 10;
-        	i = 10;
+        String[] fruits = new String[3];
+        fruits[0] = "Apple";
+        fruits[1] = "Banana";
+        fruits[2] = "Orange";
+        for (String fruit : fruits) {
+            System.out.println("Fruit: " + fruit);
         }
-        else
-            System.out.println("i is greater than 15");  
-
-        int b= 30;
-
-        if (b > a) {
-            System.out.println("b is greater");
-        }
-        else if(a > b)
-            System.out.println("a is greater");       
-        else {
-            System.out.println("Both are equal");
-        }
-    
-	} 
-} 
+    }
+}

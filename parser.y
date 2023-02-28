@@ -6,7 +6,7 @@
 #include "cp.h"
 using namespace std;
 
-#define YYERROR_VERBOSE
+#define YYERROR_VERBOSE 1
 
 void yyerror (const char *s);
 extern "C" int yylex();
@@ -32,7 +32,7 @@ Node *createNode(string label, string value, vector <Node *> children) {
 %start CompilationUnit1
 
 %token <str> CONTINUE FOR CHAR FINAL STATIC VOID CLASS LONG CONST FLOAT WHILE LITERAL IDENTIFIER STRINGLITERAL
-%token <str> BOOLEAN PRIVATE IF PACKAGE THIS BREAK DOUBLE BYTE ELSE PUBLIC RETURN INT SHORT
+%token <str> BOOLEAN PRIVATE IF PACKAGE THIS BREAK DOUBLE BYTE ELSE PUBLIC RETURN INT SHORT ABSTRACT
 
 
 %token <str> '=' ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN AND_ASSIGN OR_ASSIGN XOR_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN UNSIGNED_RIGHT_ASSIGN
@@ -205,7 +205,10 @@ ClassModifier
     : PUBLIC { $$ = createNode("Keyword", $1, {} ); }
     | PRIVATE { $$ = createNode("Keyword", $1, {} ); }
     | STATIC {$$ = createNode("Keyword", $1, {} ); }
+    | FINAL {$$ = createNode("Keyword", $1, {});}
+    | ABSTRACT { $$ = createNode("Keyword", $1,{});}
     ;
+  
 VariableDeclaratorList 
     : VariableDeclaratorList ',' VariableDeclarator  {$$ = $1;$$->children.push_back($3);Node * temp2 = createNode("Separator",$2,{}); $$->children.push_back(temp2); }
     | VariableDeclarator {$$=$1;}

@@ -1,0 +1,6 @@
+
+parser
+parser.tab.c
+parser.tab.h
+lex.yy.c
+graph.ps 

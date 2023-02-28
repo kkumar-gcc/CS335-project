@@ -1,23 +1,7 @@
-class UniversalGUI{
-	JFrame jframe;
-	DatabaseDriver dd = new DatabaseDriver();
-
-	void initFrame()
-	{
-		jframe = new JFrame("Universal GUI");
-		jframe.setSize(new Dimension(500,500));
-	}
-
-	
-
-	public UniversalGUI()
-	{
-		initFrame();
-	}
-
-	public static void main(String args[])
-	{
-		new UniversalGUI();
-	}
-
+public class test_10 {
+    public static void main(String[] args) {
+        int x = 10;
+        String message = "Hello World!";
+        System.out.println(message);
+    }
 }

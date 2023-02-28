@@ -13,7 +13,7 @@ long long int line = 1;
 	
 %}
 
-
+Abstract ="abstract"
 Boolean "boolean"
 Break "break"
 Byte "byte"
@@ -142,7 +142,7 @@ Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 
 [ \t\r\f\b]+ 			;
 [\n] { line++;}
-
+{Abstract} { yylval.str=strdup(yytext); return(ABSTRACT); }
 {Boolean} {yylval.str=strdup(yytext); return BOOLEAN;}
 {Break} {yylval.str=strdup(yytext); return BREAK;}
 {Byte} {yylval.str=strdup(yytext); return BYTE;}
@@ -228,7 +228,7 @@ Identifier				[a-zA-Z_$][a-zA-Z_0-9$]*
 {Literal}				{yylval.str=strdup(yytext); return LITERAL;}
 {StringLiteral}	{yylval.str=strdup(yytext); return STRINGLITERAL;}
 {Identifier}			{yylval.str=strdup(yytext); return IDENTIFIER;}
-.					{ cerr<<line<<"Error : Illegal Character >>> "<<yytext<<"\n"; exit(-1); }
+.					{ cerr<<"Line:"<<line<<" :Error :: Illegal Character >>> "<<yytext<<"\n"; exit(-1); }
 
 
 %%

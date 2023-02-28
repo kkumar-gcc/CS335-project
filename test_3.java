@@ -1,23 +1,13 @@
-class HelloWorld { 
-    public void main(String args[]) 
-    { 
-		 int a = --(((b+c)/d*m*(k%j)-d.j)++);
-         return a;
-    } 
-    int sum(int a,int b)
-    {
-    	int sum = a + b;
-    	return sum;
+public class test_3 {
+    // Program with conditional statements:
+    public static void main(String[] args) {
+        int num = 10;
+        if (num > 0) {
+            System.out.println(num + " is a positive number");
+        } else if (num < 0) {
+            System.out.println(num + " is a negative number");
+        } else {
+            System.out.println(num + " is zero");
+        }
     }
-    private String concatenate(String a,String b)
-    {	
-    	String conc = a + b;
-    	return conc;
-    }
-    boolean and(boolean a,boolean b)
-    {
-    	boolean ans = a&b;
-    	return ans;
-    }
-
-} 
+}
