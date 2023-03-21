@@ -10,7 +10,7 @@ public:
 	SymTable();
 
 	Env* GetMainClass();
-	Symbol* AddVar(string varName, string varType, string genericType, int _width);
+	Symbol* AddVar(string varName, string varType, string genericType, int _width,string varToken ,int line);
 	string GetMethodType();
 	Symbol* GetVar(string varName);
 	// Symbol* GetVarEnv(string varName);

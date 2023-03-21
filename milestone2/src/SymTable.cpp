@@ -18,8 +18,8 @@ Env* SymTable::GetMainClass(){
 	return NULL;
 }
 
-Symbol* SymTable::AddVar(string varName, string varType = "None", string genericType = "simple", int _width = -1){
-	return curEnv->addVar(varName, varType, genericType, _width);
+Symbol* SymTable::AddVar(string varName, string varType = "None", string genericType = "simple", int _width = -1,string varToken = "Identifier", int line = 0){
+	return curEnv->addVar(varName, varType, genericType, _width,varToken,line);
 }
 
 string SymTable::GetMethodType(){

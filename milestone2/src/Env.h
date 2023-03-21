@@ -33,8 +33,8 @@ public:
 	Env(string _name, string _type, Env *prev_env, string _return_type, string Class, string ParentClass);
 
 	string getMethodType();
-	string genTemp(string varType, string genericType, int _width);
-	Symbol* addVar(string varName, string varType, string genericType, int _width);
+	string genTemp(string varType, string genericType, int _width, string varToken, int line);
+	Symbol* addVar(string varName, string varType, string genericType, int _width, string varToken, int line);
 	int getWidth(string varType, string genericType, int _width);
 	Symbol* getVar(string varName);
 	vector <string> setArgTypeList(vector <string> args);

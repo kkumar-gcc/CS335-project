@@ -10,8 +10,11 @@ public:
 	bool isKeyword;
 	int width;
 	int offset;
+	string token;
+	vector<int> line;
+
 	map<string, string> attr;
     
-    Symbol(string symName, string Type, int Width, string BaseType, int Offset);
+    Symbol(string symName, string Type, int Width, string BaseType, int Offset, string token, vector<int> Line);
    
 };

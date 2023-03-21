@@ -1,6 +1,6 @@
 #include "Symbol.h"
 
-Symbol::Symbol(string symName, string Type, int Width = 0, string BaseType = "simple", int Offset = 0)
+Symbol::Symbol(string symName, string Type, int Width = 0, string BaseType = "simple", int Offset = 0,string Token="Identifier", vector<int> Line = {})
 {
 	string newName="_"+symName;
 	name = newName;
@@ -9,4 +9,6 @@ Symbol::Symbol(string symName, string Type, int Width = 0, string BaseType = "si
 	width  = Width; 
 	offset = Offset;
 	baseType = BaseType;
+	token = Token;
+	line = Line;
 }

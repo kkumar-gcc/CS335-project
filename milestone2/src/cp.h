@@ -20,9 +20,9 @@ public:
 	string arrayName;
 	string arrayIndex; 
   // string e_label;
-  vector<Node *> children;
+   vector<Node *> children;
 
-  Node(){
+    Node(){
 		place = "None";
 		type = "None";
 		isLit = false;

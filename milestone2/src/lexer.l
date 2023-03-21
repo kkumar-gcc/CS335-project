@@ -9,7 +9,7 @@ extern "C" int yylex();
 
 using namespace std;
 
-long long int line = 1;
+extern long long int line;
 	
 %}
 %option yylineno

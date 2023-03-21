@@ -27,7 +27,9 @@ Node *createNode(string label, string value,vector <Node *> children) {
 }
 
 SymTable* ST = new SymTable();
+long long int line=1;
 %}
+
 %define parse.error verbose
 %union{
     char *str;
@@ -62,7 +64,7 @@ SymTable* ST = new SymTable();
 %type <node> ReferenceType ArrayType Dims ArrayInitialize VariableInitializerList ClassDeclaration
 %type <node> NormalClassDeclaration ClassModifier ClassBody ClassMemberDeclaration ClassBodyDeclaration FieldDeclaration VariableDeclaratorList
 %type <node> VariableDeclarator VariableDeclaratorId VariableInitializer MethodDeclaration MethodHeader
-%type <node> MemberName FormalParameterList FormalParameters FormalParameter LastFormalParameter
+%type <node> MemberName FormalParameterList FormalParameter
 %type <node> ReceiverParameter MethodBody StaticInitializer ConstructorDeclaration ConstructorDeclarator ConstructorBody 
 %type <node> ExplicitConstructorInvocation Block BlockStatements BlockStatement LocalVariableDeclarationStatement LocalVariableDeclaration
 %type <node> Statement StatementNoShortIf StatementWithoutTrailingSubstatement EmptyStatement LabeledStatement
@@ -106,9 +108,13 @@ Identifier
 					Symbol* sym = ST->GetVar("_" + s1);
 					
 					if(sym == NULL){
-						sym = ST->AddVar(s1);
-					}
+						sym = ST->AddVar(s1,"None","simple",-1,"Identifier",line);
+                    }
+                    else{
+                       sym->line.push_back(line); 
+                    }
                     Node* n1 = new Node();
+                    
 					n1->place = sym->name;
                     n1->type= sym->type;
                     n1->value = $1;
@@ -506,7 +512,7 @@ MethodDeclaration
     : MULTI_ClassModifier MethodHeader MethodBody     {
          $$=createNode("MethodDeclaration","",{$1,$2,$3}); 
     }     
-    | MethodHeader MethodBody                       {
+    | MethodHeader MethodBody                      {
             $$ = $1;
 			// vector <TAC*> tmp;
 			// tmp.pb(genLabelTAC(ST->curEnv->name));
@@ -581,16 +587,38 @@ MemberName
     ;
 
 FormalParameterList
-    : ReceiverParameter                              { $$ = createNode("Parameters", "", {$1}); }
-    | FormalParameters ',' LastFormalParameter       { Node *temp2=createNode("Separator",$2,{}); $$=createNode("FormalParameterList","",{$1,temp2,$3}); }
-    | LastFormalParameter                            { $$ = createNode("Parameters", "", {$1}); }
+    : 
+    ReceiverParameter                              { $$ = createNode("Parameters", "", {$1}); }
+    | FormalParameterList ','FormalParameter      {
+        if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+		}
+		$$ = $1;
+		// TAC* tac = new TAC();
+		// tac->op = "param";
+		// tac->target = $3->place;
+		// $$->code.pb(tac);
+         Node *temp2=createNode("Separator",$2,{}); $$=createNode("FormalParameterList","",{$1,temp2,$3}); 
+    }
+    | FormalParameter  {
+        if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+			cerr << "Symbol " << $1->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+		$$ = $1; 
+		// TAC* tac = new TAC();
+		// tac->op = "param";
+		// tac->target = $1->place;
+		// $$->code.pb(tac);
+     }
     ;
 
-FormalParameters
-    : FormalParameters ',' FormalParameter           { $$ = $1; $$->children.push_back($3);Node *temp=createNode("Separator",$2,{}); $$->children.push_back(temp); }
-    | FormalParameter                                { $$ = createNode("Parameters", "", {$1}); }
-    | ReceiverParameter                              { $$ = createNode("Parameters", "", {$1}); }
-    ;
+// FormalParameters
+//     : FormalParameters ',' FormalParameter           { $$ = $1; $$->children.push_back($3);Node *temp=createNode("Separator",$2,{}); $$->children.push_back(temp); }
+//     | FormalParameter                                { $$ = createNode("Parameters", "", {$1}); }
+//     | ReceiverParameter                              { $$ = createNode("Parameters", "", {$1}); }
+//     ;
 
 FormalParameter
     : FINAL Type VariableDeclaratorId               { Node *temp = createNode("MODIFIER", $1, {}); $$ = createNode("FormalParameter", "", {temp, $2, $3}); }
@@ -611,10 +639,6 @@ FormalParameter
      }
     ;
 
-LastFormalParameter
-    : FormalParameter                               { $$ = $1; }
-    ;
-
 ReceiverParameter
     : Type THIS                                     { Node *n1 = createNode("THIS", $2, {}); $$ = createNode("ReceiverParameter", "", {$1, n1}); }
     | Type IDENTIFIER '.' THIS                      { Node *n4 = createNode("THIS", $4, {}); Node *n3 = createNode("Separator", $3, {}); Node *n2 = createNode("Identifier", $2, {}); $$ = createNode("ReceiverParameter", "", {$1, n2, n3,n4}); }
@@ -622,7 +646,7 @@ ReceiverParameter
 
 MethodBody
     : Block                                         {$$ = $1; }
-    | ';'                                           {$$ = createNode("EMP", "", {}); }
+    | ';'                                           {$$ = NULL; }
     ;
 StaticInitializer
     : STATIC Block                                  { Node * n1 = createNode("KEYWORD", $1, {});$$ = createNode("StaticInitializer","", {n1,$2}); } 
@@ -655,13 +679,25 @@ SINGLE_ArgumentList
     ;
 
 Block
-    : '{' BlockStatements '}'                { Node *n1 = createNode("Separator", $1, {});Node *n3= createNode("Separator", $3, {});$$ = createNode("Block","",{n1,$2,n3}); }
-    | '{' '}'                                 { Node *n1 = createNode("Separator", $1, {});Node *n2= createNode("Separator", $2, {});$$ = createNode("Block","",{n1,n2}); }
+    : '{' BlockStatements '}'  { 
+          $$ = $2;
+          ST->EndScope();
+        // Node *n1 = createNode("Separator", $1, {});Node *n3= createNode("Separator", $3, {});$$ = createNode("Block","",{n1,$2,n3}); 
+    }
+    | '{' '}' {
+        $$=NULL;
+        ST->EndScope();
+        // Node *n1 = createNode("Separator", $1, {});Node *n2= createNode("Separator", $2, {});$$ = createNode("Block","",{n1,n2}); 
+    }
     ;
 
 BlockStatements
-    : BlockStatement                         { $$ = createNode("BlockStatements", "", {$1}); }
-    | BlockStatements BlockStatement         { $$ = $1; $$->children.push_back($2); }
+    : BlockStatement                         { $$ = $1; }
+    | BlockStatements BlockStatement         {
+        $$=$1;
+        // $$->code.insert($$->code.end(),$2->code.begin(),$2->code.end());
+        //  $$ = $1; $$->children.push_back($2); 
+    }
     ;
 
 BlockStatement
@@ -723,11 +759,14 @@ EmptyStatement
     ;
 
 LabeledStatement
-    : IDENTIFIER ':' Statement               {  Node *n1 = createNode("Identifier", $1, {});Node *n2 = createNode("Separator", $2, {}); $$ = createNode("LabeledStatement","", {n1,n2,$3});}
+    : Identifier ':' Statement               {  
+
+        // Node *n1 = createNode("Identifier", $1, {});Node *n2 = createNode("Separator", $2, {}); $$ = createNode("LabeledStatement","", {n1,n2,$3});
+    }
     ;
 
 LabeledStatementNoShortIf
-    : IDENTIFIER ':' StatementNoShortIf       { Node *n1 = createNode("Identifier", $1, {});Node *n2 = createNode("Separator", $2, {}); $$ = createNode("LabeledStatementNoShortIf","", {n1,n2,$3}); }
+    : Identifier ':' StatementNoShortIf       {Node *n2 = createNode("Separator", $2, {}); $$ = createNode("LabeledStatementNoShortIf","", {$1,n2,$3}); }
     ;
 
 ExpressionStatement
@@ -745,11 +784,60 @@ StatementExpression
     ;
 
 IfThenStatement
-    : IF '(' Expression ')' Statement     { Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n4 = createNode("Separator", $4, {}); $$=createNode("IfThenStatement","",{n1,n2,$3,n4,$5});}                           
+    : IF '(' Expression ')' Statement     { 
+        $$ = $3;
+		// string trueLabel = getNewLabel();			
+		// string ifEndLabel = getNewLabel();
+		// TAC* tac1 = new TAC();
+		// tac1->op = "label"; tac1->target = trueLabel;
+		// TAC* tac2 = new TAC();
+		// tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = trueLabel;
+		if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+			cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+		// TAC* tac3 = new TAC();
+		// tac3->op = "goto"; tac3->target = ifEndLabel;
+		// TAC* tac4 = new TAC();
+		// tac4->op = "label"; tac4->target = ifEndLabel;
+		// $$->code.pb(tac2);
+		// $$->code.pb(tac3);
+		// $$->code.pb(tac1);
+		// $$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+		// $$->code.pb(tac4);
+        // Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n4 = createNode("Separator", $4, {}); $$=createNode("IfThenStatement","",{n1,n2,$3,n4,$5});
+    }                           
     ;
 
 IfThenElseStatement
-    : IF '(' Expression ')' StatementNoShortIf ELSE Statement  { Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n4 = createNode("Separator", $4, {}); Node *n6 = createNode("KEYWORD", $6, {}); $$=createNode("IfThenELseStatement","",{n1,n2,$3,n4,$5,n6,$7});}      
+    : IF '(' Expression ')' StatementNoShortIf ELSE Statement  { 
+        	$$ = $3;
+			// TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
+			// TAC* tac3 = new TAC();	TAC* tac4 = new TAC();
+			// TAC* tac5 = new TAC();	TAC* tac6 = new TAC();
+			// string trueLabel = getNewLabel();			
+			// string falseLabel = getNewLabel();
+			// string endLabel = getNewLabel();
+			// tac1->op = "label"; tac1->target = trueLabel;
+			// tac2->op = "label"; tac2->target = falseLabel;
+			// tac3->op = "ifgoto"; tac3->dest = ST->GetVar($3->place); tac3->target = trueLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			// tac4->op = "goto"; tac4->target = falseLabel;
+			// tac5->op = "goto"; tac5->target = endLabel;
+			// tac6->op = "label"; tac6->target = endLabel;
+
+			// $$->code.pb(tac3); $$->code.pb(tac4);
+			// $$->code.pb(tac1);
+			// $$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			// $$->code.pb(tac5);
+			// $$->code.pb(tac2);
+			// $$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			// $$->code.pb(tac6);
+        // Node *n1 = createNode("KEYWORD", $1, {}); Node *n2 = createNode("Separator", $2, {}); Node *n4 = createNode("Separator", $4, {}); Node *n6 = createNode("KEYWORD", $6, {}); $$=createNode("IfThenELseStatement","",{n1,n2,$3,n4,$5,n6,$7});
+    }      
     ;
 
 IfThenElseStatementNoShortIf
@@ -980,11 +1068,61 @@ ArrayAccess
     ;
 
 MethodInvocation
-    : IDENTIFIER '(' ArgumentList ')'                                                  {Node *temp = createNode("Identifier",$1,{});Node *temp1 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$4,{});
-                                                                                        $$=createNode("methodInvocation","",{temp,temp1,$3,temp2});}
-    | IDENTIFIER '(' ')'                                                               {Node *temp = createNode("Identifier",$1,{});Node *temp2 = createNode("Separator",$2,{});Node *temp3 = createNode("Separator",$3,{});
+    : Identifier '(' ArgumentList ')'  {
+        
+			// TAC* tac = new TAC();
+			// tac->op = "call";
+			// tac->isInt1 = true;
+
+			Env* methodEnv = ST->GetMethod($1->place);
+			if(!methodEnv){
+				cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<line<<endl;
+				exit(1);
+			}
+			// tac->target = methodEnv->name;
+
+
+			// tac->l1 = convertNumToString(methodEnv->argNum);
+			string str1 = ST->GenTemp();
+
+
+			Symbol* sym = ST->GetVar(str1);
+			sym->type = methodEnv->returnType;
+			// tac->dest = sym;
+			$$ = $1;
+			// if($3->code.size() > 0)	$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->place = str1;
+			$$->type = methodEnv->returnType;
+			// $$->code.pb(tac);
+
+        // Node *temp = createNode("Identifier",$1,{});Node *temp1 = createNode("Separator",$2,{});Node *temp2 = createNode("Separator",$4,{});
+        //                                                                                 $$=createNode("methodInvocation","",{temp,temp1,$3,temp2});
+    }
+    | Identifier '(' ')'  {
+
+        // TAC* tac = new TAC();
+		// tac->op = "call";
+		Env* methodEnv = ST->GetMethod($1->place);
+		if(!methodEnv){
+			cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<line<<endl;
+			exit(1);
+		}
+		// tac->target = methodEnv->name;
+		// tac->isInt1 = true;
+		// tac->l1 = convertNumToString(methodEnv->argNum);
+		string str1 = ST->GenTemp();
+		Symbol* sym = ST->GetVar(str1);
+		sym->type = methodEnv->returnType;
+		// tac->dest = sym;
+		$$ = $1;
+		$$->place = str1;
+		$$->type = methodEnv->returnType;
+
+		// $$->code.pb(tac);
+        // Node *temp = createNode("Identifier",$1,{});Node *temp2 = createNode("Separator",$2,{});Node *temp3 = createNode("Separator",$3,{});
                                                                                        
-                                                                                        $$=createNode("methodInvocation","",{temp,temp2,temp3});}
+        //                                                                                 $$=createNode("methodInvocation","",{temp,temp2,temp3});
+    }
     | TypeName '.' IDENTIFIER '(' ArgumentList ')'
                                                                                        {Node *temp3 = createNode("Identifier",$3,{});Node *temp2 = createNode("Separator",$2,{});Node *temp4 = createNode("Separator",$4,{});Node *temp6 = createNode("Separator",$6,{});
                                                                                         $$=createNode("methodInvocation","",{$1,temp2,temp3,temp4,$5,temp6});}
