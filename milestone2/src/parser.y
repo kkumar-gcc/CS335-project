@@ -44,7 +44,7 @@ SymTable* ST = new SymTable();
 %left <str> OR_OP AND_OP '|' '^' '&' NE_OP EQ_OP LEFT_OP RIGHT_OP UNSIGNED_RIGHT_OP '+' '-' '*' '/' '%'
 %nonassoc <str> '<' '>' GE_OP LE_OP INSTANCEOF
 %right <str> NEW INC_OP DEC_OP '!' '~' '(' ')' '{' '}' '[' ']' '.' ',' ';' PROPORTION PTR_OP
-%type <node> Literal BooleanLiteral NullLiteral StringLiteral IntegerLiteral CharacterLiteral
+%type <node> Literal BooleanLiteral NullLiteral StringLiteral IntegerLiteral CharacterLiteral Identifier
 %type <node> CompilationUnit PackageDeclaration
 %type <node> TypeDeclaration TypeName Type PrimitiveType NumericType IntegralType FloatingPointType
 %type <node> ContinueStatement ReturnStatement Primary PrimaryNoNewArray ClassLiteral ClassInstanceCreationExpression
@@ -57,11 +57,11 @@ SymTable* ST = new SymTable();
 %type <node> AdditiveExpression MultiplicativeExpression UnaryExpression PreIncrementExpression
 %type <node> PreDecrementExpression UnaryExpressionNotPlusMinus PostfixExpression
 %type <node> PostIncrementExpression PostDecrementExpression CastExpression
-%type <node> MULTI_TypeDeclaration MULTI_ClassModifier MULTI_ClassBodyDeclaration SINGLE_ArgumentList
+%type <node> MULTI_TypeDeclaration MULTI_ClassModifier MULTI_ClassBodyDeclaration SINGLE_ArgumentList 
 %type <node> ReferenceType ArrayType Dims ArrayInitialize VariableInitializerList ClassDeclaration
 %type <node> NormalClassDeclaration ClassModifier ClassBody ClassMemberDeclaration ClassBodyDeclaration FieldDeclaration VariableDeclaratorList
 %type <node> VariableDeclarator VariableDeclaratorId VariableInitializer MethodDeclaration MethodHeader
-%type <node> MethodDeclarator FormalParameterList FormalParameters FormalParameter LastFormalParameter
+%type <node> MemberName FormalParameterList FormalParameters FormalParameter LastFormalParameter
 %type <node> ReceiverParameter MethodBody StaticInitializer ConstructorDeclaration ConstructorDeclarator ConstructorBody 
 %type <node> ExplicitConstructorInvocation Block BlockStatements BlockStatement LocalVariableDeclarationStatement LocalVariableDeclaration
 %type <node> Statement StatementNoShortIf StatementWithoutTrailingSubstatement EmptyStatement LabeledStatement
@@ -89,37 +89,31 @@ TypeDeclaration :
       | ';' {$$=createNode("Separator",$1,{});}
       ;
 
-TypeName : IDENTIFIER 
+TypeName : Identifier
                 {	
-    				string s1($1);
+                    $$=$1;
+                    // Node *n1=createNode("Identifier",$1,sym->type,{}); $$ = createNode("expressionName","", {n1}); 
+                }
+           | TypeName '.' Identifier   {
+
+            //  Node* n2 = createNode("Identifier", $3,sym->type, {}); Node* n3 = createNode("Separator", $2, {}); $1->children.push_back(n3); $1->children.push_back(n2); $$ = $1; 
+            }
+        ;                             
+Identifier 
+    : IDENTIFIER   { 
+                    string s1($1);
 					Symbol* sym = ST->GetVar("_" + s1);
 					
 					if(sym == NULL){
 						sym = ST->AddVar(s1);
 					}
                     Node* n1 = new Node();
-					newNode->place = sym->name;
+					n1->place = sym->name;
+                    n1->type= sym->type;
+                    n1->value = $1;
+                    n1->label="Identifier";
 					$$ = n1;
-                    $$->type= sym->type;
-                    // Node *n1=createNode("Identifier",$1,sym->type,{}); $$ = createNode("expressionName","", {n1}); 
                 }
-           | TypeName '.' IDENTIFIER   {
-                    string s1($3);
-					Symbol* sym = ST->GetVar("_" + s1);
-					
-					if(sym == NULL){
-						sym = ST->AddVar(s3);
-					}
-
-                    Node* n3 = new Node();
-					newNode->place = sym->name;
-					$$ = n3;
-                    $$->type= sym->type;
-
-            //  Node* n2 = createNode("Identifier", $3,sym->type, {}); Node* n3 = createNode("Separator", $2, {}); $1->children.push_back(n3); $1->children.push_back(n2); $$ = $1; 
-            }
-        ;                             
-
 Type
     : PrimitiveType             { $$ = $1; }
     | ReferenceType             { $$ = $1; }
@@ -127,7 +121,14 @@ Type
 
 PrimitiveType
     : NumericType               { $$ = $1; }
-    | BOOLEAN                   { $$ = createNode("Keyword", $1, {} ); }
+    | BOOLEAN                   {
+        Node * n1 = new Node();
+        $$ = n1;
+        $$->place = "bool";
+        $$->type = "bool";
+        $$->label = "Keyword";
+        $$->value = $1;
+    }
     ;
 
 NumericType
@@ -136,16 +137,63 @@ NumericType
     ;
 
 IntegralType
-    : BYTE                      { $$ = createNode("Keyword", $1, {} ); }
-    | SHORT                     { $$ = createNode("Keyword", $1, {} ); }
-    | INT                       { $$ = createNode("Keyword", $1, {} ); }
-    | LONG                      { $$ = createNode("Keyword", $1, {} ); }
-    | CHAR                      { $$ = createNode("Keyword", $1, {} ); }
+    : BYTE                      { 
+        Node * n1 = new Node();
+        $$ = n1;
+        $$->place = "byte";
+        $$->type = "byte";
+        $$->label = "Keyword";
+        $$->value = $1;
+      }
+    | SHORT                     {  
+        Node * n1 = new Node();
+        $$ = n1;
+        $$->place = "short";
+        $$->type = "short";
+        $$->label = "Keyword";
+        $$->value = $1; 
+        }
+    | INT                       { 
+        Node * n1 = new Node();
+        $$ = n1;
+        $$->place = "int";
+        $$->type = "int";
+        $$->label = "Keyword";
+        $$->value = $1; 
+        }
+    | LONG                      {
+        Node * n1 = new Node();
+        $$ = n1;
+        $$->place = "long";
+        $$->type = "long";
+        $$->label = "Keyword";
+        $$->value = $1; 
+        }
+    | CHAR                      {
+        Node * n1 = new Node();
+        $$ = n1;
+        $$->place = "char";
+        $$->type = "char";
+        $$->label = "char";
+        $$->value = $1; 
+    }
     ;
 
 FloatingPointType
-    : FLOAT                     { $$ = createNode("Keyword", $1, {} ); }
-    | DOUBLE                    { $$ = createNode("Keyword", $1, {} ); }
+    : FLOAT                     {  
+        Node * n1 = new Node();
+        $$ = n1;
+        $$->place = "float";
+        $$->type = "float";
+        $$->label = "Keyword";
+        $$->value = $1; }
+    | DOUBLE                    { 
+        Node * n1 = new Node();
+        $$ = n1;
+        $$->place = "double";
+        $$->type = "double";
+        $$->label = "Keyword";
+        $$->value = $1;}
     ;
 
 ReferenceType 
@@ -178,17 +226,44 @@ ClassDeclaration :
      ;
    
 NormalClassDeclaration 
-     : MULTI_ClassModifier CLASS IDENTIFIER ClassBody  {Node *temp2=createNode("Keyword",$2,{});Node *temp3=createNode("Identifier",$3,{});$$=createNode("normalClassDeclaration","",{$1,temp2,temp3,$4});}
-     | CLASS IDENTIFIER ClassBody {Node *temp1=createNode("Keyword",$1,{});Node *temp2=createNode("Identifier",$2,{});$$=createNode("normalClassDeclaration","",{temp1,temp2,$3});}  
+     : MULTI_ClassModifier CLASS Identifier ClassBody  {
+            $$ = $3;
+			$$->type = "class";
+			ST->curEnv->name = $3->place;
+			ST->EndScope();
+        // Node *temp2=createNode("Keyword",$2,{});Node *temp3=createNode("Identifier",$3,{});$$=createNode("normalClassDeclaration","",{$1,temp2,temp3,$4});
+        }
+     | CLASS Identifier ClassBody {
+        $$=$2;
+        $$->type ="class";
+        ST->curEnv->name=$2->place;
+        ST->EndScope();
+        // Node *temp1=createNode("Keyword",$1,{});Node *temp2=createNode("Identifier",$2,{});$$=createNode("normalClassDeclaration","",{temp1,temp2,$3});
+        }  
      ;
 
 ClassBody 
-     : '{' MULTI_ClassBodyDeclaration '}'  {Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("classBody","",{temp1,$2,temp3});} 
-     | '{' '}'   {Node *temp1=createNode("Separator",$1,{});Node *temp2=createNode("Separator",$2,{}); Node *temp3=createNode("fieldDeclaration","",{});$$=createNode("classBody","",{temp1,temp2});}
+     : '{' MULTI_ClassBodyDeclaration '}'  {
+            ST->curEnv->type = "CLASSTYPE";
+			$$ = $2; 
+        // Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("classBody","",{temp1,$2,temp3});
+     } 
+     | '{' '}'   {
+        	ST->curEnv->type = "CLASSTYPE";
+			Node* n = new Node();
+			$$ = n; 
+        // Node *temp1=createNode("Separator",$1,{});Node *temp2=createNode("Separator",$2,{}); Node *temp3=createNode("fieldDeclaration","",{});$$=createNode("classBody","",{temp1,temp2});
+     }
      ;
 MULTI_ClassBodyDeclaration 
-     : ClassBodyDeclaration {$$=createNode("multiClassBodyDeclaration","",{$1});}
-     | MULTI_ClassBodyDeclaration ClassBodyDeclaration { $$=$1; $$->children.push_back($2);}
+     : ClassBodyDeclaration {$$=$1;}
+     | MULTI_ClassBodyDeclaration ClassBodyDeclaration 
+     { 
+            $$ = $1;
+		
+        // $$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+        // $$=$1; $$->children.push_back($2);
+     }
      ;
 ClassBodyDeclaration 
      : ClassMemberDeclaration   { $$ = $1; }
@@ -206,24 +281,69 @@ ClassMemberDeclaration
 
 
 FieldDeclaration
-    : MULTI_ClassModifier Type VariableDeclaratorList ';' {Node * temp4 =createNode("Separator",$4,{});$$=createNode("fieldDeclaration","",{$1,$2,$3,temp4});}
-    | Type VariableDeclaratorList ';' {Node * temp3 =createNode("Separator",$3,{});$$=createNode("fieldDeclaration","",{$1,$2,temp3});}
+    : MULTI_ClassModifier Type VariableDeclaratorList ';' {
+        Node * temp4 =createNode("Separator",$4,{});$$=createNode("fieldDeclaration","",{$1,$2,$3,temp4});
+    }
+    | Type VariableDeclaratorList ';' {
+        /*need some changes here */
+        Node * temp3 =createNode("Separator",$3,{});$$=createNode("fieldDeclaration","",{$1,$2,temp3});
+    }
     ;
 MULTI_ClassModifier 
-    : ClassModifier {$$=createNode("multiTypeDeclaration","",{$1});}
-    | MULTI_ClassModifier ClassModifier  {$$=$1; $1->children.push_back($2);}
+    : ClassModifier {$$=$1;}
+    | MULTI_ClassModifier ClassModifier  {  }
     ;
+
 ClassModifier 
-    : PUBLIC { $$ = createNode("Keyword", $1, {} ); }
-    | PRIVATE { $$ = createNode("Keyword", $1, {} ); }
-    | STATIC {$$ = createNode("Keyword", $1, {} ); }
-    | FINAL {$$ = createNode("Keyword", $1, {});}
-    | ABSTRACT { $$ = createNode("Keyword", $1,{});}
+    : PUBLIC { 			
+            string s1($1);
+			Node* n1 = new Node();
+			$$ = n1;
+			$$->place = s1;
+            $$->label = "Keyword";
+            $$->value = s1;
+        }
+    | PRIVATE {		
+            string s1($1);
+			Node* n1 = new Node();
+			$$ = n1;
+			$$->place = s1;
+            $$->label = "Keyword";
+            $$->value = s1;
+        }
+    | STATIC {		
+            string s1($1);
+			Node* n1 = new Node();
+			$$ = n1;
+			$$->place = s1;
+            $$->label = "Keyword";
+            $$->value = s1;
+        }
+    | FINAL {		
+            string s1($1);
+			Node* n1 = new Node();
+			$$ = n1;
+			$$->place = s1;
+            $$->label = "Keyword";
+            $$->value = s1;
+        }
+    | ABSTRACT { 		
+            string s1($1);
+			Node* n1 = new Node();
+			$$ = n1;
+			$$->place = s1;
+            $$->label = "Keyword";
+            $$->value = s1;
+        }
     ;
   
 VariableDeclaratorList 
-    : VariableDeclaratorList ',' VariableDeclarator  {$$ = $1;$$->children.push_back($3);Node * temp2 = createNode("Separator",$2,{}); $$->children.push_back(temp2); }
-    | VariableDeclarator {$$=$1;}
+    : VariableDeclaratorList ',' VariableDeclarator  {
+        $$ = $1;$$->children.push_back($3);Node * temp2 = createNode("Separator",$2,{}); $$->children.push_back(temp2); 
+    }
+    | VariableDeclarator {
+        $$=$1;
+    }
     ;
 
 VariableDeclarator 
@@ -231,8 +351,8 @@ VariableDeclarator
     | VariableDeclaratorId {$$=$1;}
     ;   
 VariableDeclaratorId 
-    : IDENTIFIER Dims {Node * temp2 = createNode("Identifier",$1,{}); $$=createNode("VariableDeclaratorId","",{temp2,$2});} 
-    | IDENTIFIER  {$$=createNode("Identifier",$1,{});}
+    : Identifier Dims {$$=createNode("VariableDeclaratorId","",{$1,$2});} 
+    | Identifier  {$$=$1;}
     ;
 
 VariableInitializer
@@ -242,20 +362,81 @@ VariableInitializer
 
 
 MethodDeclaration
-    : MULTI_ClassModifier MethodHeader MethodBody     {$$=createNode("MethodDeclaration","",{$1,$2,$3}); }     
-    | MethodHeader MethodBody                       {$$=createNode("MethodDeclaration","",{$1,$2}); }     
+    : MULTI_ClassModifier MethodHeader MethodBody     {
+         $$=createNode("MethodDeclaration","",{$1,$2,$3}); 
+    }     
+    | MethodHeader MethodBody                       {
+            $$ = $1;
+			// vector <TAC*> tmp;
+			// tmp.pb(genLabelTAC(ST->curEnv->name));
+			// $$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+			// $$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
+			ST->EndScope();
+        // $$=createNode("MethodDeclaration","",{$1,$2}); 
+    }     
     ;
 
 MethodHeader
-    : Type MethodDeclarator                  { $$=createNode("MethodHeader","",{$2,$1}); }   
-    | VOID MethodDeclarator                  { Node *temp = createNode("TYPE", $1, {}); $$ = createNode("MethodHeader","",{$2,temp}); }
+    : Type MemberName'(' FormalParameterList ')'      { 
+         	$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = $2->place;
+            // $$->code = $4->code;
+
+        // Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4});
+    }
+    | Type MemberName '(' ')'        { 
+         	$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = $2->place;
+        // Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4});
+    }
+    | Type MemberName '(' FormalParameterList ')' Dims        { 
+         	$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = $2->place;
+			// $$->code = $4->code;
+        // Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4});
+    }
+    | Type MemberName '(' ')' Dims         { 
+         	$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = $2->place;
+        // Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4});
+    }
+    | VOID MemberName '(' FormalParameterList ')'          { 
+         	$$ = $2;
+			ST->curEnv->name = $2->place;
+			// $$->code = $4->code;
+        // Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4});
+    }
+    | VOID MemberName '(' ')'         { 
+         	$$ = $2;
+			ST->curEnv->name = $2->place;
+
+        // Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4});
+    }
+    | VOID MemberName '(' FormalParameterList ')' Dims        { 
+         	$$ = $2;
+			ST->curEnv->name = $2->place;
+			// $$->code = $4->code;
+        // Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4});
+    }
+    | VOID MemberName '(' ')' Dims         { 
+         	$$ = $2;
+			ST->curEnv->name = $2->place;
+            
+        // Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4});
+    }
     ;
 
-MethodDeclarator
-    : IDENTIFIER '(' FormalParameterList ')'         { Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4}); }
-    | IDENTIFIER '(' ')'                             { Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp3=createNode("Separator",$3,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,temp3}); }
-    | IDENTIFIER '(' FormalParameterList ')' Dims    { Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp4=createNode("Separator",$4,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,$3,temp4,$5}); }
-    | IDENTIFIER '(' ')' Dims                        { Node *temp1=createNode("Identifier",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp3=createNode("Separator",$3,{});$$ = createNode("MethodDeclarator", "", {temp1,temp2,temp3,$4}); }
+MemberName
+    : Identifier {
+         ST->BeginScope();
+         ST->curEnv->type = "METHODTYPE";
+
+         $$ = $1;
+    }
     ;
 
 FormalParameterList
@@ -339,7 +520,10 @@ LocalVariableDeclarationStatement
     ;
 
 LocalVariableDeclaration
-    : Type VariableDeclaratorList            { $$ = createNode("LocalVariableDeclaration", "", {$1, $2}); }
+    : Type VariableDeclaratorList            { 
+        
+        $$ = createNode("LocalVariableDeclaration", "", {$1, $2}); 
+    }
     ;
 
 Statement
@@ -490,7 +674,7 @@ Primary
     ;
 
 PrimaryNoNewArray
-    : LITERAL                                                                       {$$=$1;}
+    : Literal                                                                      {$$=$1;}
     | ClassLiteral                                                                  {$$=$1;}
     | THIS                                                                          {$$=createNode("KEYWORD",$1,{});}
     | TypeName '.' THIS                                                             {Node *temp = createNode("KEYWORD",$3,{});Node *temp1 = createNode("Separator",$2,{} ); $$=createNode("PRIMARYNONEWARRAY","",{$1,temp,temp1});}                                                             
@@ -517,7 +701,9 @@ BooleanLiteral
 			$$ = n1;
 			$$->type = "bool";
 			$$->place = s1;
-			$$->isLit = true;	
+			$$->isLit = true;
+            $$->label = "TrueLiteral";
+            $$->value = s1;
 		}
 		| FALSELITERAL { 	
 			string s1($1);
@@ -526,6 +712,8 @@ BooleanLiteral
 			$$->type = "bool";
 			$$->place = s1;
 			$$->isLit = true;
+            $$->label = "FalseLiteral";
+            $$->value = s1;
 		}
 		;
 
@@ -536,6 +724,8 @@ IntegerLiteral
 			$$->type = "int";
 			$$->place = to_string($1);
 			$$->isLit = true;
+            $$->label = "IntegerLiteral";
+            $$->value = to_string($1);
 		}
 		;
 
@@ -547,6 +737,8 @@ CharacterLiteral
 			$$->type = "char";
 			$$->place = s1;
 			$$->isLit = true;
+            $$->label = "CharacterLiteral";
+            $$->value = s1;
 		}
 		;
 
@@ -558,6 +750,8 @@ StringLiteral
 			$$->type = "string";
 			$$->place = s1;
 			$$->isLit = true;
+            $$->label = "StringLiteral";
+            $$->value = s1;
 		}
 		;
 
@@ -569,6 +763,8 @@ NullLiteral
 			$$->type = "null";
 			$$->place = s1;
 			$$->isLit = true;
+            $$->label = "NullLiteral";
+            $$->value = s1;
 		}
 		;
 
@@ -636,7 +832,7 @@ MethodInvocation
    ;
 
 ArgumentList
-    : ArgumentList ',' Expression                                                      {Node *temp = createNode("Separator",$2,{}); $1->children.push_back($3); $1->children.push_back(temp);$$ = $1;}
+    : ArgumentList ',' Expression                                                      {Node *temp = createNode("Separator",$2,{}); $1->children.push_back(temp); $1->children.push_back($3);$$ = $1;}
     | Expression                                                                       {$$ = createNode("ARGLIST","", {$1}); }
     ;
 
@@ -903,7 +1099,9 @@ void generateDotFile() {
 int main (void) {
     yyparse();
 
-    generateDotFile();
+    // generateDotFile();
+
+    ST->PrintTable(ST->curEnv);
 
     return 1;
 }

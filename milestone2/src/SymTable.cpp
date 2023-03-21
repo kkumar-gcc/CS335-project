@@ -83,7 +83,7 @@ Env* SymTable::EndScope(){
 
 
 	// curEnv->width = max(curEnv->maxWidth, curEnv->width + cur_width);
-	// return curEnv;
+	return curEnv;
 }
 
 vector <string> SymTable::SetArgTypeList(vector <string> args){

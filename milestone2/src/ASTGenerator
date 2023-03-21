@@ -84,13 +84,13 @@ fi
 if [[ $verbose -eq 1 ]]; then
     echo "Converting dot file to PostScript..."
 fi
-dot -Tps "$output" -o "${output%.*}.ps"
+# dot -Tps "$output" -o "${output%.*}.ps"
 
 # Open PostScript file
-if [[ $verbose -eq 1 ]]; then
-    echo "Opening PostScript file..."
-fi
-xdg-open "${output%.*}.ps"
+# if [[ $verbose -eq 1 ]]; then
+#     echo "Opening PostScript file..."
+# fi
+# xdg-open "${output%.*}.ps"
 
 # Clean up dot file
 # if [[ $verbose -eq 1 ]]; then

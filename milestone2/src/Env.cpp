@@ -149,9 +149,9 @@ Env* Env::getMethodFromClass(string methodName, string className, Env* baseEnv){
 }
 
 void Env::printTableEnv(Env* env){
-
+    
 	for(map<string, Symbol*>::iterator it = (env->addTable.begin()) ; it != (env->addTable.end()) ; it++){
-		cout << (((*it).se)->name) << " ";
+		cout << (((*it).se)->name) << " " << (((*it).se)->baseType) << " " <<endl;
 	}
 	cout << "\n";
 
