@@ -21,7 +21,26 @@ string Env::getMethodType(){
 	}
 	return "None";
 }
-
+// helper function used in getCEcode()
+string equal_compatible(string s1, string s2){
+	if(s1=="char"){
+		if(s2=="char")	return "char";
+		else if(s2=="int") return "int";
+		else if(s2=="long") return "long";
+		else return "None";
+	}
+	else if(s1=="int"){
+		if (s2=="char" || s2=="int") return "int";
+		else if(s2=="long") return "long";
+		else return "None";
+	}
+	else if(s1=="long"){
+		if(s2=="char"||s2=="int"||s2=="long") return "long";
+		else return "None";
+	}
+	else if(s1==s2)	return s1;
+	else return "None";
+}
 string Env::genTemp(string varType = "None", string genericType = "simple", int _width = 0){
 
 	string place = "tVar_"+ to_string(tempCounter);
@@ -151,7 +170,7 @@ Env* Env::getMethodFromClass(string methodName, string className, Env* baseEnv){
 void Env::printTableEnv(Env* env){
     
 	for(map<string, Symbol*>::iterator it = (env->addTable.begin()) ; it != (env->addTable.end()) ; it++){
-		cout << (((*it).se)->name) << " " << (((*it).se)->baseType) << " " <<endl;
+		cout << (((*it).se)->name) << " " << (((*it).se)->type) << " " <<endl;
 	}
 	cout << "\n";
 

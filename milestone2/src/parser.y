@@ -3,8 +3,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "cp.h"
 #include "IR.h"
+#include "cp.h"
+
 using namespace std;
 
 #define YYERROR_VERBOSE 1
@@ -113,7 +114,8 @@ Identifier
                     n1->value = $1;
                     n1->label="Identifier";
 					$$ = n1;
-                }
+    }
+    ;
 Type
     : PrimitiveType             { $$ = $1; }
     | ReferenceType             { $$ = $1; }
@@ -144,7 +146,7 @@ IntegralType
         $$->type = "byte";
         $$->label = "Keyword";
         $$->value = $1;
-      }
+    }
     | SHORT                     {  
         Node * n1 = new Node();
         $$ = n1;
@@ -152,7 +154,7 @@ IntegralType
         $$->type = "short";
         $$->label = "Keyword";
         $$->value = $1; 
-        }
+    }
     | INT                       { 
         Node * n1 = new Node();
         $$ = n1;
@@ -160,7 +162,7 @@ IntegralType
         $$->type = "int";
         $$->label = "Keyword";
         $$->value = $1; 
-        }
+    }
     | LONG                      {
         Node * n1 = new Node();
         $$ = n1;
@@ -168,7 +170,7 @@ IntegralType
         $$->type = "long";
         $$->label = "Keyword";
         $$->value = $1; 
-        }
+    }
     | CHAR                      {
         Node * n1 = new Node();
         $$ = n1;
@@ -187,13 +189,14 @@ FloatingPointType
         $$->type = "float";
         $$->label = "Keyword";
         $$->value = $1; }
-    | DOUBLE                    { 
+    | DOUBLE  { 
         Node * n1 = new Node();
         $$ = n1;
         $$->place = "double";
         $$->type = "double";
         $$->label = "Keyword";
-        $$->value = $1;}
+        $$->value = $1;
+    }
     ;
 
 ReferenceType 
@@ -201,8 +204,22 @@ ReferenceType
    | ArrayType  { $$ = $1; }
    ;
 ArrayType :
-     PrimitiveType Dims { $$ = createNode("ArrayType","",{$1,$2});}
-     | TypeName Dims { $$ = createNode("ArrayType","",{$1,$2});}
+     PrimitiveType Dims { 
+        //$$ = createNode("ArrayType","",{$1,$2});
+        Node *n1 = new Node();
+		$$ = n1;
+		$$->type=$1->type;
+		$$->place=$1->place;
+		$$->isArray = true;
+    }
+     | TypeName Dims { 
+        // $$ = createNode("ArrayType","",{$1,$2});
+        Node *n1 = new Node();
+		$$ = n1;
+		$$->type=$1->type;
+		$$->place=$1->place;
+		$$->isArray = true;
+    }
      ;
 Dims :
     Dims '[' ']'  { $$ = $1;Node *temp1 = createNode("Separator",$2,{});Node *temp3 = createNode("Separator",$3,{}); $$->children.push_back(temp1);$$->children.push_back(temp3);}
@@ -210,15 +227,50 @@ Dims :
    ;
 
 ArrayInitialize
-    : '{' VariableInitializerList ',' '}'                  { Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{});Node *temp4=createNode("Separator",$4,{}); $$=createNode("ArrayInitialize","",{temp1,$2,temp3,temp4}); }
-    | '{' VariableInitializerList '}'                      { Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("ArrayInitialize","",{temp1,$2,temp3}); }
+    : '{' VariableInitializerList ',' '}'  { 
+        //Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{});Node *temp4=createNode("Separator",$4,{}); $$=createNode("ArrayInitialize","",{temp1,$2,temp3,temp4});
+        $$ = $2;
+		$$->isArray = true;
+    }
+    | '{' VariableInitializerList '}'  {
+        //Node *temp1=createNode("Separator",$1,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("ArrayInitialize","",{temp1,$2,temp3}); 
+        $$ = $2;
+		$$->isArray = true; 
+    }
     | '{' ',' '}'                                           { Node *temp1=createNode("Separator",$1,{});Node *temp2=createNode("Separator",$2,{});Node *temp3=createNode("Separator",$3,{}); $$=createNode("ArrayInitialize","",{temp1,temp2,temp3}); }
     | '{' '}'                                              { Node *temp1=createNode("Separator",$1,{});Node *temp2=createNode("Separator",$2,{});$$ = createNode("ArrayInitialize_EMP", "", {temp1,temp2}); }
     ;
 
 VariableInitializerList
-    : VariableInitializer                                  { $$ = createNode("VariableInitializerList", "", {$1}); }  
-    | VariableInitializerList ',' VariableInitializer      { $$ = $1;Node *n2=createNode("Separator",$2,{}); $$->children.push_back(n2);$$->children.push_back($3); }
+    : VariableInitializer  {
+        //$$ = createNode("VariableInitializerList", "", {$1}); 
+            if($1->isArray){
+				cerr << "Incorrect array initialisation at line: " << line;
+				exit(1);
+			}
+			Symbol* temp =  ST->GetVar(ST->GenTemp());
+			// TAC* tac = new TAC();
+			//tac->op = "=";
+			//tac->dest = temp;
+		//	$$->code = $1->code;
+		//	if($1->isLit){
+		//		tac->isInt1 = true;
+		//		tac->l1 = $1->place;
+		//	}
+		//	else{
+		//		if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+		//			cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+		//			exit(1);
+		//		}
+		//		tac->opd1 = ST->GetVar($1->place);
+		//	}
+		//	$$->varDecs.pb(tac->dest);
+		//	$$->code.pb(tac);                                                        }  
+    }
+    | VariableInitializerList ',' VariableInitializer      { 
+        // $$ = $1;Node *n2=createNode("Separator",$2,{}); $$->children.push_back(n2);$$->children.push_back($3); 
+          
+     }
     ;
 
 ClassDeclaration :
@@ -226,21 +278,21 @@ ClassDeclaration :
      ;
    
 NormalClassDeclaration 
-     : MULTI_ClassModifier CLASS Identifier ClassBody  {
+    : MULTI_ClassModifier CLASS Identifier ClassBody  {
             $$ = $3;
 			$$->type = "class";
 			ST->curEnv->name = $3->place;
 			ST->EndScope();
         // Node *temp2=createNode("Keyword",$2,{});Node *temp3=createNode("Identifier",$3,{});$$=createNode("normalClassDeclaration","",{$1,temp2,temp3,$4});
         }
-     | CLASS Identifier ClassBody {
+    | CLASS Identifier ClassBody {
         $$=$2;
         $$->type ="class";
         ST->curEnv->name=$2->place;
         ST->EndScope();
         // Node *temp1=createNode("Keyword",$1,{});Node *temp2=createNode("Identifier",$2,{});$$=createNode("normalClassDeclaration","",{temp1,temp2,$3});
-        }  
-     ;
+    }  
+    ;
 
 ClassBody 
      : '{' MULTI_ClassBodyDeclaration '}'  {
@@ -286,7 +338,19 @@ FieldDeclaration
     }
     | Type VariableDeclaratorList ';' {
         /*need some changes here */
-        Node * temp3 =createNode("Separator",$3,{});$$=createNode("fieldDeclaration","",{$1,$2,temp3});
+        if($2->type != "None" && equal_compatible($2->type, $1->type) == "None"){
+			cerr << "Incompatible types in declaration at line: " << line << endl;
+			exit(1);
+		}
+		$$ = $2;
+		string typeName = $1->place;
+		int siz = $$->varDecs.size();
+		fori(0, siz){
+			($$->varDecs)[i]->type = typeName;
+		}
+
+		$$->type = typeName;
+        //Node * temp3 =createNode("Separator",$3,{});$$=createNode("fieldDeclaration","",{$1,$2,temp3});
     }
     ;
 MULTI_ClassModifier 
@@ -339,20 +403,97 @@ ClassModifier
   
 VariableDeclaratorList 
     : VariableDeclaratorList ',' VariableDeclarator  {
-        $$ = $1;$$->children.push_back($3);Node * temp2 = createNode("Separator",$2,{}); $$->children.push_back(temp2); 
+        $$ = $1;
+		// $$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		if($3->isArray){
+			if($1->type == "None")
+			   $$->type = $3->type;
+			else 
+				if($1->type != $3->type){
+					cerr << "Incompatible types in declaration at line: " << line << endl;
+					exit(1);
+				}
+			}
+		Symbol* sym = ST->GetVar($3->place);
+		$$->varDecs.pb(sym);
+        // $$ = $1;$$->children.push_back($3);Node * temp2 = createNode("Separator",$2,{}); $$->children.push_back(temp2); 
     }
     | VariableDeclarator {
-        $$=$1;
+        $$ = $1; 
+		Symbol* sym = ST->GetVar($1->place);
+		$$->varDecs.pb(sym);
+        // $$=$1;
     }
     ;
 
 VariableDeclarator 
-    : VariableDeclaratorId '=' VariableInitializer {Node * temp2 = createNode("=","",{});$$=createNode("VariableDeclarator","",{$1,temp2,$3});} 
+    : VariableDeclaratorId '=' VariableInitializer {
+        Node* n1 = new Node();
+		$$ = n1;
+		// $$->code = $3->code;
+			
+		$$->place = $1->place;
+			
+		// TAC* tac1 = new TAC();
+		Symbol* sym;
+			
+		sym = ST->GetVar($1->place);
+		if(sym->type != "None"){
+			cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << line << endl;
+			exit(1);
+		}
+		// tac1->dest = sym;
+		// tac1->op = "=";
+
+		if($3->isLit == true){
+			// tac1->isInt1 = true;
+			// tac1->l1 = $3->place;
+			// $$->code.pb(tac1);
+		}
+		else if($3->isArray){
+
+			sym->baseType = "array";
+			sym->type = $3->type;
+			$$->isArray = true;
+			// for(int i=0; i<$3->varDecs.size(); i++){
+			// 	TAC* tac = new TAC();
+			// 	tac->op = "setarr";
+			// 	tac->array_name = $1->place;
+			// 	tac->opd2 = $3->varDecs[i];
+			// 	tac->isInt1 = true;
+			// 	tac->l1 = convertNumToString(i);
+			// 	$$->code.pb(tac);
+			// }
+			$$->varDecs.clear();
+		}
+		else{
+			Symbol* sym_ = ST->GetVar($3->place);
+			// tac1->opd1 = sym_;
+			sym -> baseType = sym_->baseType;
+			// $$->code.pb(tac1);
+		}
+
+        // Node * temp2 = createNode("=","",{});$$=createNode("VariableDeclarator","",{$1,temp2,$3});
+    } 
     | VariableDeclaratorId {$$=$1;}
     ;   
 VariableDeclaratorId 
-    : Identifier Dims {$$=createNode("VariableDeclaratorId","",{$1,$2});} 
-    | Identifier  {$$=$1;}
+    : Identifier Dims {
+        $$ = $1; 
+		Symbol* sym = ST->GetVar($1->place);
+		if(sym->type != "None"){
+			cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << line << endl;
+			exit(1);
+		}
+    } 
+    | Identifier  {
+        $$ = $1; 
+		Symbol* sym = ST->GetVar($1->place);
+		if(sym->type != "None"){
+			cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << line << endl;
+			exit(1);
+		}
+    }
     ;
 
 VariableInitializer
@@ -453,7 +594,21 @@ FormalParameters
 
 FormalParameter
     : FINAL Type VariableDeclaratorId               { Node *temp = createNode("MODIFIER", $1, {}); $$ = createNode("FormalParameter", "", {temp, $2, $3}); }
-    | Type VariableDeclaratorId                     { $$ = createNode("FormalParameter", "", {$1, $2}); }
+    //| Type VariableDeclaratorId                     { $$ = createNode("FormalParameter", "", {$1, $2}); }
+     | Type Identifier {
+            $$ = $2; 
+			Symbol* sym = ST->GetVar($2->place);
+			sym->type = $1->place;
+			$$->type = $1->place;
+			ST->curEnv->argNum ++;
+
+			//TAC* tac = new TAC();
+			//tac->op = "readParam";
+			//tac->target = $2->place;
+
+		//	$$->code.clear();
+			// $$->code.pb(tac);
+     }
     ;
 
 LastFormalParameter
@@ -521,8 +676,19 @@ LocalVariableDeclarationStatement
 
 LocalVariableDeclaration
     : Type VariableDeclaratorList            { 
-        
-        $$ = createNode("LocalVariableDeclaration", "", {$1, $2}); 
+        if($2->type != "None" && equal_compatible($2->type, $1->type) == "None"){
+			cerr << "Incompatible types in declaration at line: " << line << endl;
+			exit(1);
+		}
+		$$ = $2;
+		string typeName = $1->place;
+		int siz = $$->varDecs.size();
+		fori(0, siz){
+			($$->varDecs)[i]->type = typeName;
+		}
+
+		$$->type = typeName;
+        // $$ = createNode("LocalVariableDeclaration", "", {$1, $2}); 
     }
     ;
 
