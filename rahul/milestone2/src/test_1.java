@@ -5,7 +5,8 @@ public class test_1 {
     public void main(int f,int a) {
         // int a = 6;
         int b = 5;
-        
+        int c= a+b;
+        // bool d= c||b;
         if(a>5){
             int d;
             System.out.println(a);

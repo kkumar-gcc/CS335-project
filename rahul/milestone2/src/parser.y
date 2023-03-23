@@ -777,6 +777,8 @@ LabeledStatement
 
 LabeledStatementNoShortIf
     : Identifier ':' StatementNoShortIf       { 
+        $$ = $1;
+        $$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
     }
     ;
 
@@ -1126,95 +1128,218 @@ AssignmentOperator
 
 ConditionalExpression
    : ConditionalOrExpression                                                            {$$=$1;}
-   | ConditionalOrExpression '?' Expression ':' ConditionalExpression                   {genNode *temp1=createNode("Separator",$2,{});genNode *temp2=createNode("Separator",$4,{});$$=createNode("BRANCH","",{$1,$3,$5,temp1,temp2});}
+   | ConditionalOrExpression '?' Expression ':' ConditionalExpression                   {
+    	genNode* newNode = new genNode();
+		$$ = newNode;
+		getCECode($$, $1, $3, $5, line);
+   }
    ;
 
 ConditionalOrExpression
     : ConditionalAndExpression                                                          {$$=$1;}
-   | ConditionalOrExpression OR_OP ConditionalAndExpression                             {$$=createNode("operator",$2,{$1,$3});}
+   | ConditionalOrExpression OR_OP ConditionalAndExpression                             {
+    	genNode* n= new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "||", $1, $3, line);
+   }
    ;
 
 ConditionalAndExpression
    : InclusiveOrExpression                                                              {$$=$1;}                                                                                                                                                                                                                           
-   | ConditionalAndExpression AND_OP InclusiveOrExpression                              {$$=createNode("operator",$2,{$1,$3});}                                                                                                                                                               
+   | ConditionalAndExpression AND_OP InclusiveOrExpression                              {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "&&", $1, $3, line);
+   }                                                                                                                                                               
    ;
 
 InclusiveOrExpression
    : ExclusiveOrExpression                                                              {$$=$1;}                                        
-   | InclusiveOrExpression '|' ExclusiveOrExpression                                    {$$=createNode("operator",$2,{$1,$3});}                                                                        
+   | InclusiveOrExpression '|' ExclusiveOrExpression                                    {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "|", $1, $3, line);
+   }                                                                        
    ;
 
 ExclusiveOrExpression
    : AndExpression                                                                      {$$=$1;}                              
-   | ExclusiveOrExpression '^' AndExpression                                            {$$=createNode("operator",$2,{$1,$3});}                                                               
+   | ExclusiveOrExpression '^' AndExpression                                            {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "^", $1, $3, line);
+   }                                                               
    ;
 
 AndExpression
    : EqualityExpression                                                                 {$$=$1;}                                  
-   | AndExpression '&' EqualityExpression                                               {$$=createNode("operator",$2,{$1,$3});}                                                           
+   | AndExpression '&' EqualityExpression                                               {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "&", $1, $3, line);
+   }                                                           
    ;
 
 EqualityExpression
    : RelationalExpression                                                               {$$=$1;}
-   | EqualityExpression EQ_OP RelationalExpression                                      {$$=createNode("operator",$2,{$1,$3});}
-   | EqualityExpression NE_OP RelationalExpression                                      {$$=createNode("operator",$2,{$1,$3});}
+   | EqualityExpression EQ_OP RelationalExpression                                      {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "==", $1, $3, line);
+    }
+   | EqualityExpression NE_OP RelationalExpression                                      {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "!=", $1, $3, line);
+    }
    ;
 
 RelationalExpression
    : ShiftExpression                                                                    {$$=$1;}
-   | RelationalExpression '<' ShiftExpression                                           {$$=createNode("operator",$2,{$1,$3});}
-   | RelationalExpression '>' ShiftExpression                                           {$$=createNode("operator",$2,{$1,$3});}
-   | RelationalExpression LE_OP ShiftExpression                                         {$$=createNode("operator",$2,{$1,$3});}
-   | RelationalExpression GE_OP ShiftExpression                                         {$$=createNode("operator",$2,{$1,$3});}
-   | RelationalExpression INSTANCEOF ReferenceType                                      {$$=createNode("operator",$2,{$1,$3});}
+   | RelationalExpression '<' ShiftExpression                                           {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "<", $1, $3, line);
+   }
+   | RelationalExpression '>' ShiftExpression                                           {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, ">", $1, $3, line);
+    }
+   | RelationalExpression LE_OP ShiftExpression                                         {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "<=", $1, $3, line);
+   }
+   | RelationalExpression GE_OP ShiftExpression                                         {
+     	genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, ">=", $1, $3, line);
+    }
+//    | RelationalExpression INSTANCEOF ReferenceType                                      {$$=createNode("operator",$2,{$1,$3});} //TODO: CHECK HERE FOR INSTANCEOF OP
    ;
 
 ShiftExpression
    : AdditiveExpression                                                                 {$$=$1;}
-   | ShiftExpression LEFT_OP  AdditiveExpression                                        {$$=createNode("operator",$2,{$1,$3});}
-   | ShiftExpression RIGHT_OP AdditiveExpression                                        {$$=createNode("operator",$2,{$1,$3});}
-   | ShiftExpression UNSIGNED_RIGHT_OP AdditiveExpression                               {$$=createNode("operator",$2,{$1,$3});}
+   | ShiftExpression LEFT_OP  AdditiveExpression                                        {
+        genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "<<", $1, $3, line);
+    }
+   | ShiftExpression RIGHT_OP AdditiveExpression                                        {
+        genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, ">>", $1, $3, line);
+   }
+//    | ShiftExpression UNSIGNED_RIGHT_OP AdditiveExpression                               {$$=createNode("operator",$2,{$1,$3});} //TODO: CHECK HERE FOR UNSIGNED RIGHT OP
    ;
 
 AdditiveExpression
    : MultiplicativeExpression                                                           {$$=$1;}
-   | AdditiveExpression '+' MultiplicativeExpression                                    {$$=createNode("operator",$2,{$1,$3});}
-   | AdditiveExpression '-' MultiplicativeExpression                                    {$$=createNode("operator",$2,{$1,$3});}
+   | AdditiveExpression '+' MultiplicativeExpression                                    {
+        genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "+", $1, $3, line);
+    }
+   | AdditiveExpression '-' MultiplicativeExpression                                    {
+        genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "-", $1, $3, line);
+    }
    ;
 
 MultiplicativeExpression
    : UnaryExpression                                                                    {$$=$1;}
-   | MultiplicativeExpression '*' UnaryExpression                                       {$$=createNode("operator",$2,{$1,$3});}                 
-   | MultiplicativeExpression '/' UnaryExpression                                       {$$=createNode("operator",$2,{$1,$3});}
-   | MultiplicativeExpression '%' UnaryExpression                                       {$$=createNode("operator",$2,{$1,$3});}
+   | MultiplicativeExpression '*' UnaryExpression                                       {
+        genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "*", $1, $3, line);
+    }                 
+   | MultiplicativeExpression '/' UnaryExpression                                       {
+        genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "/", $1, $3, line);
+    }
+   | MultiplicativeExpression '%' UnaryExpression                                       {
+        genNode* n = new genNode();
+		$$ = n;
+		$$->code = $1->code;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		gen2OpCode($$, "%", $1, $3, line);
+    }
    ;
 
 UnaryExpression
    : PreIncrementExpression                                                             {$$=$1;}
    | PreDecrementExpression                                                             {$$=$1;}
-   | '+' UnaryExpression                                                                {genNode * temp = createNode("operator",$1,{});
-                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
-   | '-' UnaryExpression                                                                {genNode * temp = createNode("operator",$1,{});
-                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
+   | '+' UnaryExpression                                                                {
+       $$ = $2;
+   }
+   | '-' UnaryExpression                                                                {
+    	genNode* n = new genNode();
+		$$ = n;
+		genNode* zeroNode = new genNode();
+		zeroNode->isLit = true; zeroNode->place = "0"; zeroNode->type = "int";
+		gen2OpCode($$, "-", zeroNode, $2, line);
+   }
    | UnaryExpressionNotPlusMinus                                                        {$$=$1;}
    ;
 
 PreIncrementExpression
-   : INC_OP UnaryExpression                                                             {genNode * temp = createNode("operator",$1,{});
-                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
+   : INC_OP UnaryExpression                                                             {
+    	$$ = $2;
+		getPreUnaryOpCode("++", $$, $2, line);
+   }
    ;
 
 PreDecrementExpression
-   : DEC_OP UnaryExpression                                                             {genNode * temp = createNode("operator",$1,{});
-                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
+   : DEC_OP UnaryExpression                                                             {
+    	$$ = $2;
+		getPreUnaryOpCode("--", $$, $2, line);
+   }
    ;
 
 UnaryExpressionNotPlusMinus
    : PostfixExpression                                                                  {$$=$1;}
-   | '~' UnaryExpression                                                                {genNode * temp = createNode("operator",$1,{});
-                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
-   | '!' UnaryExpression                                                                {genNode * temp = createNode("operator",$1,{});
-                                                                                         $$=createNode("unaryOperator","",{temp,$2});}
+   | '~' UnaryExpression                                                                {
+   }
+   | '!' UnaryExpression                                                                {
+
+   }
    | CastExpression                                                                     {$$=$1;}
    ;
 
@@ -1226,17 +1351,23 @@ PostfixExpression
    ;
 
 PostIncrementExpression
-   : PostfixExpression INC_OP                                                           {genNode * temp = createNode("operator",$2,{});
-                                                                                         $$=createNode("unaryOperator","",{$1,temp});}
+   : PostfixExpression INC_OP                                                           {
+        // $$ = $1;
+		// getPreUnaryOpCode("--", $$, $2, line);
+   }
    ;
 
 PostDecrementExpression
-   : PostfixExpression DEC_OP                                                           {genNode * temp = createNode("operator",$2,{});
-                                                                                         $$=createNode("unaryOperator","",{$1,temp});}
+   : PostfixExpression DEC_OP                                                           {
+    // genNode * temp = createNode("operator",$2,{});
+    //                                                                                      $$=createNode("unaryOperator","",{$1,temp});
+   }
    ;
 
 CastExpression
-   : '(' PrimitiveType ')' UnaryExpression                                              {genNode * temp1 = createNode("Separator",$1,{});genNode * temp3 = createNode("Separator",$3,{});$$=createNode("TYPECAST","",{$2,$4,temp1,temp3});}
+   : '(' PrimitiveType ')' UnaryExpression                                              {
+
+   }
    ;
 
 

@@ -1,46 +1,50 @@
-13
+15
 1, label, _test_1
 2, =, _a, 5
 3, label, _main
 4, readParam, _a
 5, readParam, _f
 6, =, _b, 5
-7, =, _tVar_0, 1
-8, =, _tVar_1, 2
-9, =, _array, 1
-10, label, _main1
-11, readParam, _c1
-12, readParam, _args1
-13, =, _b1, 5
+7, +, _tVar_0, _a, _b
+8, =, _c, _tVar_0
+9, =, _tVar_2, 1
+10, =, _tVar_3, 2
+11, =, _array, 1
+12, label, _main1
+13, readParam, _c1
+14, readParam, _args1
+15, =, _b1, 5
 
 
 
-_a int 3 5 9 11 Identifier 
-_c int 4 17 19 Identifier 
+_a int 3 5 8 10 12 Identifier 
+_c int 4 8 18 20 Identifier 
 _main None 5 Identifier 
-_main1 None 21 Identifier 
+_main1 None 22 Identifier 
 _milestone2 None 1 Identifier 
 _src None 1 Identifier 
 _test_1 None 2 Identifier 
 
 scope1
-_System None 11 Identifier 
-_array int 18 Identifier 
-_b int 7 Identifier 
-_d char 10 16 Identifier 
+_System None 12 Identifier 
+_array int 19 Identifier 
+_b int 7 8 Identifier 
+_d char 11 17 Identifier 
 _f int 5 Identifier 
-_out None 11 Identifier 
-_tVar_0 None 0 Identifier 
-_tVar_1 None 0 Identifier 
+_out None 12 Identifier 
+_tVar_0 int 0 Identifier 
+_tVar_1 bool 0 Identifier 
+_tVar_2 None 0 Identifier 
+_tVar_3 None 0 Identifier 
 
 scope2
 
 scope3
 
 scope4
-_args1 int 21 Identifier 
-_b1 int 22 Identifier 
-_c1 int 21 Identifier 
+_args1 int 22 Identifier 
+_b1 int 23 Identifier 
+_c1 int 22 Identifier 
 
 scope5
 
