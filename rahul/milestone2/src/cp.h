@@ -1,28 +1,29 @@
 #pragma once
 #ifndef CP_H
 #define CP_H
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 #include "Symbol.h"
+#include "IR.h"
 using namespace std;
 class Node
 {
 
 public:
-  string label;
-  string value;
+	string label;
+	string value;
 
-
-  string place;
+	string place;
 	string type;
 	bool isLit;
 	bool isArray;
 	int nodeLen;
 	string arrayName;
-	string arrayIndex; 
-  // string e_label;
-   vector<Node *> children;
+	string arrayIndex;
+	// string e_label;
+	vector<Node *> children;
 
-    Node(){
+	Node()
+	{
 		place = "None";
 		type = "None";
 		isLit = false;
@@ -30,10 +31,8 @@ public:
 		nodeLen = 0;
 	}
 
-	// vector <TAC*> code;
-	vector <Symbol*> varDecs;
-  
+	vector <TAC*> code;
+	vector<Symbol *> varDecs;
 };
-
 
 #endif

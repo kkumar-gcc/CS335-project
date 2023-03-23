@@ -25,41 +25,7 @@ string Env::getMethodType()
 	}
 	return "None";
 }
-// helper function used in getCEcode()
-string equal_compatible(string s1, string s2)
-{
-	if (s1 == "char")
-	{
-		if (s2 == "char")
-			return "char";
-		else if (s2 == "int")
-			return "int";
-		else if (s2 == "long")
-			return "long";
-		else
-			return "None";
-	}
-	else if (s1 == "int")
-	{
-		if (s2 == "char" || s2 == "int")
-			return "int";
-		else if (s2 == "long")
-			return "long";
-		else
-			return "None";
-	}
-	else if (s1 == "long")
-	{
-		if (s2 == "char" || s2 == "int" || s2 == "long")
-			return "long";
-		else
-			return "None";
-	}
-	else if (s1 == s2)
-		return s1;
-	else
-		return "None";
-}
+
 string Env::genTemp(string varType = "None", string genericType = "simple", int _width = 0, string varToken = "Identifier", int lineNum = 0)
 {
 
@@ -230,6 +196,15 @@ void Env::printTableEnv(Env *env)
 		}
 		cout << (((*it).se)->token) << " " << endl;
 	}
+	for (map<string, Symbol *>::iterator it = (env->varList.begin()); it != (env->varList.end()); it++)
+	{
+		cout << (((*it).se)->name) << " " << (((*it).se)->type) << " ";
+		for (auto element : (((*it).se)->line))
+		{
+			cout << element << " ";
+		}
+		cout << (((*it).se)->token) << " " << endl;
+	}
 	for (map<string, Symbol *>::iterator it = (env->addTable.begin()); it != (env->addTable.end()); it++)
 	{
 		cout << (((*it).se)->name) << " " << (((*it).se)->type) << " ";
@@ -251,8 +226,3 @@ void Env::printTableEnv(Env *env)
 	}
 }
 
-string convertNumToString(int x){
-	stringstream ss;
-	ss << x;
-	return ss.str();
-}

@@ -19,15 +19,7 @@ set<string> itype0= {"ret","exit"};
 
 struct TAC
 {
-	TAC(){
-		isInt1 = false;
-		isInt2 = false;
-		opd1 = NULL;
-		opd2 = NULL;
-		dest = NULL;
-	}
-
-	int lineNum;
+		int lineNum;
 
 	string op;
 	int opType;
@@ -48,10 +40,23 @@ struct TAC
 	bool isInt1;
 	bool isInt2;
 
+	bool isBreak;
+	bool isContinue;
+
+	TAC(){
+		isInt1 = false;
+		isInt2 = false;
+		opd1 = NULL;
+		opd2 = NULL;
+		dest = NULL;
+		isBreak = false;
+	}
+
 };
 
 vector < TAC* > IR;
-SymTable symTable;
+// SymTable symTable;
+SymTable* ST = new SymTable();
 
 void readFile(char* fileName);
 void fillTAC(vector <string> instr);

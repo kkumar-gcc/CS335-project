@@ -1,3 +1,4 @@
+#include "config.h"
 #include "Symbol.cpp"
 
 static int labelCounter = 0;

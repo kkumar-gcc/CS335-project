@@ -6,7 +6,8 @@ class SymTable{
 public:
 	Env* baseEnv;
 	Env* curEnv;
-
+    map<string, Symbol*> symbols;
+	
 	SymTable();
 
 	Env* GetMainClass();
@@ -25,5 +26,9 @@ public:
 	Env* EndScope();
 	vector <string> SetArgTypeList(vector <string> args);
 	void PrintTable(Env* env);
+
+	bool insert(Symbol* symbol);
+	Symbol* get(string symName);
+	Symbol* remove(string symName);
 
 };

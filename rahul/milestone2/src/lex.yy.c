@@ -750,15 +750,15 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "lexer.l"
 #line 2 "lexer.l"
-#include "cp.h"
+// #include "genTAC.cpp"
+#include <iostream>
+#include <string>
 #include "parser.tab.h"
+
+using namespace std;
 void yyerror (char *s);
 extern "C" int yylex();
 
-#include <iostream>
-#include <string>
-
-using namespace std;
 
 extern long long int line;
 	

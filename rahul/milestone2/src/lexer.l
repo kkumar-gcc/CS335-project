@@ -1,13 +1,13 @@
 %{
-#include "cp.h"
+// #include "genTAC.cpp"
+#include <iostream>
+#include <string>
 #include "parser.tab.h"
+
+using namespace std;
 void yyerror (char *s);
 extern "C" int yylex();
 
-#include <iostream>
-#include <string>
-
-using namespace std;
 
 extern long long int line;
 	

@@ -81,9 +81,9 @@ fi
 ./parser < "$input" > "$output"
 
 # Convert dot file to PostScript file
-if [[ $verbose -eq 1 ]]; then
-    echo "Converting dot file to PostScript..."
-fi
+# if [[ $verbose -eq 1 ]]; then
+#     echo "Converting dot file to PostScript..."
+# fi
 # dot -Tps "$output" -o "${output%.*}.ps"
 
 # Open PostScript file
