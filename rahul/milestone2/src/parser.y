@@ -32,6 +32,8 @@ long long int line=1;
     int ival;
     class genNode *node;
 }
+%nonassoc IFX
+%nonassoc ELSE
 
 %start Start
 
@@ -43,6 +45,7 @@ long long int line=1;
 %left <str> OR_OP AND_OP '|' '^' '&' NE_OP EQ_OP LEFT_OP RIGHT_OP UNSIGNED_RIGHT_OP '+' '-' '*' '/' '%'
 %nonassoc <str> '<' '>' GE_OP LE_OP INSTANCEOF
 %right <str> NEW INC_OP DEC_OP '!' '~' '(' ')' '{' '}' '[' ']' '.' ',' ';' PROPORTION PTR_OP
+%type <str> AssignmentOperator
 %type <node> Literal BooleanLiteral NullLiteral StringLiteral IntegerLiteral CharacterLiteral Identifier
 %type <node> CompilationUnit PackageDeclaration Start
 %type <node> TypeDeclaration TypeName Type PrimitiveType NumericType IntegralType FloatingPointType
@@ -50,7 +53,7 @@ long long int line=1;
 %type <node> UnqualifiedClassInstanceCreationExpression FieldAccess ArrayAccess
 %type <node> MethodInvocation ArgumentList MethodReference ArrayCreationExpression
 %type <node> DimExprs DimExpr Expression AssignmentExpression Assignment LeftHandSide
-%type <node> AssignmentOperator ConditionalExpression ConditionalOrExpression
+%type <node> ConditionalExpression ConditionalOrExpression
 %type <node> ConditionalAndExpression InclusiveOrExpression ExclusiveOrExpression
 %type <node> AndExpression EqualityExpression RelationalExpression ShiftExpression
 %type <node> AdditiveExpression MultiplicativeExpression UnaryExpression PreIncrementExpression
@@ -697,8 +700,8 @@ SINGLE_ArgumentList
     ;
 
 Block
-    : '{' BlockStatements '}'                { ST->BeginScope();   $$ = $2; ST->EndScope(); }
-    | '{' '}'                                { ST->BeginScope();   $$ = NULL; ST->EndScope();}
+    : '{' BlockStatements '}'                { $$ = $2; ST->EndScope(); }
+    | '{' '}'                                { $$ = NULL; ST->EndScope();}
     ;
 
 BlockStatements
@@ -783,7 +786,7 @@ LabeledStatementNoShortIf
     ;
 
 ExpressionStatement
-    : StatementExpression ';'                 { genNode *n2 = createNode("Separator", $2, {});$$ = createNode("ExpressionStatement","",{$1,n2}); }
+    : StatementExpression ';'                 { $$ = $1; }
     ;
 
 StatementExpression
@@ -797,23 +800,168 @@ StatementExpression
     ;
 
 IfThenStatement
-    : IF '(' Expression ')' Statement     { genNode *n1 = createNode("KEYWORD", $1, {}); genNode *n2 = createNode("Separator", $2, {}); genNode *n4 = createNode("Separator", $4, {}); $$=createNode("IfThenStatement","",{n1,n2,$3,n4,$5});}                           
+    : IF '(' Expression ')' Statement     { 
+        	$$ = $3;
+			string trueLabel = getNewLabel();			
+			string ifEndLabel = getNewLabel();
+			TAC* tac1 = new TAC();
+			tac1->op = "label"; tac1->target = trueLabel;
+			TAC* tac2 = new TAC();
+			tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = trueLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			TAC* tac3 = new TAC();
+			tac3->op = "goto"; tac3->target = ifEndLabel;
+			TAC* tac4 = new TAC();
+			tac4->op = "label"; tac4->target = ifEndLabel;
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac4);
+		} %prec IFX                          
     ;
 
 IfThenElseStatement
-    : IF '(' Expression ')' StatementNoShortIf ELSE Statement  { genNode *n1 = createNode("KEYWORD", $1, {}); genNode *n2 = createNode("Separator", $2, {}); genNode *n4 = createNode("Separator", $4, {}); genNode *n6 = createNode("KEYWORD", $6, {}); $$=createNode("IfThenELseStatement","",{n1,n2,$3,n4,$5,n6,$7});}      
+    : IF '(' Expression ')' StatementNoShortIf ELSE Statement  { 
+        			$$ = $3;
+			TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
+			TAC* tac3 = new TAC();	TAC* tac4 = new TAC();
+			TAC* tac5 = new TAC();	TAC* tac6 = new TAC();
+			string trueLabel = getNewLabel();			
+			string falseLabel = getNewLabel();
+			string endLabel = getNewLabel();
+			tac1->op = "label"; tac1->target = trueLabel;
+			tac2->op = "label"; tac2->target = falseLabel;
+			tac3->op = "ifgoto"; tac3->dest = ST->GetVar($3->place); tac3->target = trueLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			tac4->op = "goto"; tac4->target = falseLabel;
+			tac5->op = "goto"; tac5->target = endLabel;
+			tac6->op = "label"; tac6->target = endLabel;
+
+			$$->code.pb(tac3); $$->code.pb(tac4);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac2);
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac6);
+    }      
     ;
 
 IfThenElseStatementNoShortIf
-    : IF '(' Expression ')' StatementNoShortIf ELSE StatementNoShortIf    { genNode *n1 = createNode("KEYWORD", $1, {}); genNode *n2 = createNode("Separator", $2, {}); genNode *n4 = createNode("Separator", $4, {}); genNode *n6 = createNode("KEYWORD", $6, {}); $$=createNode("IfThenElseStatementNoShortIf","",{n1,n2,$3,n4,$5,n6,$7});}    
+    : IF '(' Expression ')' StatementNoShortIf ELSE StatementNoShortIf    {
+       			$$ = $3;
+			TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
+			TAC* tac3 = new TAC();	TAC* tac4 = new TAC();
+			TAC* tac5 = new TAC();	TAC* tac6 = new TAC();
+			string trueLabel = getNewLabel();			
+			string falseLabel = getNewLabel();
+			string endLabel = getNewLabel();
+			tac1->op = "label"; tac1->target = trueLabel;
+			tac2->op = "label"; tac2->target = falseLabel;
+			tac3->op = "ifgoto"; tac3->dest = ST->GetVar($3->place); tac3->target = trueLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			tac4->op = "goto"; tac4->target = falseLabel;
+			tac5->op = "goto"; tac5->target = endLabel;
+			tac6->op = "label"; tac6->target = endLabel;
+
+			$$->code.pb(tac3); $$->code.pb(tac4);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac2);
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac6);
+    }    
     ;
 
 WhileStatement
-    : WHILE '(' Expression ')' Statement        {genNode *n1 = createNode("KEYWORD", $1, {}); genNode *n2 = createNode("Separator", $2, {}); genNode *n4 = createNode("Separator", $4, {}); $$=createNode("WhileStatement","",{n1,n2,$3,n4,$5});}                              
+    : WHILE '(' Expression ')' Statement        {
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = inLoopLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+    }                              
     ;
 
 WhileStatementNoShortIf
-    : WHILE '(' Expression ')' StatementNoShortIf                {genNode *n1 = createNode("KEYWORD", $1, {}); genNode *n2 = createNode("Separator", $2, {}); genNode *n4 = createNode("Separator", $4, {}); $$=createNode("WhileStatementNoShortIf","",{n1,n2,$3,n4,$5});}                 
+    : WHILE '(' Expression ')' StatementNoShortIf                {
+        			genNode* newNode = new genNode();
+			$$ = newNode;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = inLoopLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+    }                 
     ;
 
 ForStatement                                                                
@@ -827,26 +975,307 @@ ForStatementNoShortIf
     ;
 
 BasicForStatement
-    : FOR '(' SingleForInit ';' SingleExpression ';' SingleForUpdate ')' Statement   { genNode *n1 = createNode("KEYWORD", $1, {});genNode *n2 = createNode("Separator", $2, {});genNode *n4 = createNode("Separator", $4, {});genNode *n6 = createNode("Separator", $6, {});genNode *n8 = createNode("Separator", $8, {}); $$=createNode("BasicForStatement","",{n1,n2,$3,n4,$5,n6,$7,n8,$9}); }
-    ;
+    : FOR '('  ';'  ';'  ')' Statement   { 
+            
+        	genNode* newNode = new genNode();
+			$$ = newNode;
 
-SingleForInit
-    :          {$$=createNode("singleForInit","",{});}
-    | ForInit              {$$=$1;}
-    ;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
 
-SingleExpression
-    :           {$$=createNode("singleExpression","",{});}
-    | Expression           {$$=$1;}
-    ;
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
 
-SingleForUpdate
-    :           {$$=createNode("singleForUpdate","",{});}
-    | ForUpdate            {$$=$1;}
-    ;
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
-BasicForStatementNoShortIf
-    : FOR '(' SingleForInit ';' SingleExpression ';' SingleForUpdate ')' StatementNoShortIf    {genNode *n1 = createNode("KEYWORD", $1, {});genNode *n2 = createNode("Separator", $2, {});genNode *n4 = createNode("Separator", $4, {});genNode *n6 = createNode("Separator", $6, {});genNode *n8 = createNode("Separator", $8, {});  $$=createNode("BasicForStatementNoShortIf","",{n1,n2,$3,n4,$5,n6,$7,n8,$9}); }
+			$$->code.pb(tac);
+			if($6->code.size() > 0)
+				$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+
+    }
+    | FOR '(' ForInit ';'  ';'  ')' Statement   { 
+        			$$ = $3;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			$$->code.pb(tac);
+			if($7->code.size() > 0)
+				$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+  
+    }
+    | FOR '(' ';' Expression ';'  ')' Statement   { 
+  
+  			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($4->isLit) && ST->GetVar($4->place)->type == "None"){
+				cerr << "Symbol " << $4->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			if($7->code.size() > 0)
+				$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+    }
+    | FOR '(' ';' ';' ForUpdate ')' Statement   { 
+        			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+			$$->code.pb(tac);
+			if($7->code.size() > 0)
+				$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac_);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+  
+    }
+    | FOR '(' ForInit ';' Expression ';' ')' Statement   { 
+        			$$ = $3;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+				cerr << "Symbol " << $5->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			if($8->code.size() > 0)
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+  
+    }
+    | FOR '(' ForInit ';' ';' ForUpdate ')' Statement   { 
+        			$$ = $3;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+			$$->code.pb(tac);
+			if($8->code.size() > 0)
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			$$->code.pb(tac_);
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+  
+    }
+    | FOR '(' ';' Expression ';' ForUpdate ')' Statement   { 
+        			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($4->place); tac2->target = inLoopLabel;
+			if(!($4->isLit) && ST->GetVar($4->place)->type == "None"){
+				cerr << "Symbol " << $4->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+			$$->code.pb(tac);
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			if($8->code.empty()){
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			}
+			$$->code.pb(tac_);
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+  
+    }
+    |  FOR '(' ForInit ';' Expression ';' ForUpdate ')' Statement   { 
+  			$$ = $3;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+				cerr << "Symbol " << $5->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			if($9->code.size() > 0)
+				$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			$$->code.pb(tac_);
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+        ST->curEnv = ST->curEnv->prevEnv;
+    }
     ;
 
 ForInit
@@ -859,8 +1288,11 @@ ForUpdate
     ;
 
 StatementExpressionList
-    : StatementExpression                               {$$=createNode("StatementExpressionList", "", {$1});}
-    | StatementExpressionList ',' StatementExpression   {$$ = $1; $$->children.push_back($3);genNode *temp1=createNode("Separator",$2,{});$$->children.push_back(temp1);}
+    : StatementExpression                               { $$ = $1; }
+    | StatementExpressionList ',' StatementExpression   {
+        $$ = $1;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+    }
     ;
 
 EnhancedForStatement
@@ -872,18 +1304,49 @@ EnhancedForStatementNoShortIf
     ;
 
 BreakStatement
-    : BREAK IDENTIFIER ';'        {genNode* n1=createNode("Keyword",$1,{});genNode* n2=createNode("Identifier",$2,{});genNode* n3=createNode("Separator",$3,{});$$=createNode("BreakStatement","",{n1,n2,n3});}
-    | BREAK ';'                   {genNode* n1=createNode("Keyword",$1,{}); genNode* n2=createNode("Separator",$2,{});$$=createNode("BreakStatement","",{n1,n2});}
+    : BREAK ';'   { 
+        genNode* n = new genNode();
+		$$ = n;
+        TAC* tac = new TAC();	tac -> op = "goto";	tac -> isBreak = true;
+        n->code.pb(tac);
+    }
     ;
 
 ContinueStatement
-    : CONTINUE IDENTIFIER ';'     {genNode* n1=createNode("Keyword",$1,{});genNode* n2=createNode("Identifier",$2,{});genNode* n3=createNode("Separator",$3,{});$$=createNode("ContinueStatement","",{n1,n2,n3});}
-    | CONTINUE ';'                {genNode* n1=createNode("Keyword",$1,{}); genNode* n2=createNode("Separator",$2,{});$$=createNode("ContinueStatement","",{n1,n2});}
+    : CONTINUE ';'                {
+        genNode* n = new genNode();
+		$$ = n;
+        TAC* tac = new TAC();	tac -> op = "goto";	tac -> isContinue = true;
+        n->code.pb(tac);
+    }
     ;
 
 ReturnStatement
-    : RETURN Expression ';'       {genNode* n1=createNode("Keyword",$1,{});genNode* n3=createNode("Separator",$3,{});$$=createNode("BreakStatement","",{n1,$2,n3});}
-    | RETURN ';'                  {genNode* n1=createNode("Keyword",$1,{}); genNode* n2=createNode("Separator",$2,{});$$=createNode("BreakStatement","",{n1,n2});}
+    : RETURN Expression ';'       {
+        $$ = $2;
+		TAC* tac = new TAC();
+		tac->op = "retint";
+		if($2->isLit){
+			tac->l1=$2->place;
+			tac->isInt1 = true;
+		}
+		else
+			tac->dest = ST->GetVar($2->place);
+		if(!($2->isLit) && ST->GetVar($2->place)->type == "None"){
+			cerr << "Symbol " << $2->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+		vector <TAC*> tmp;
+		tmp.pb(tac);
+		$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+    }
+    | RETURN ';'                  {
+        genNode* n = new genNode();
+		$$ = n;
+		TAC* tac = new TAC();
+		tac->op = "ret";
+		$$->code.pb(tac);
+    }
     ;
 
 Primary
@@ -896,8 +1359,7 @@ PrimaryNoNewArray
     | ClassLiteral                                                                  {$$=$1;}
     | THIS                                                                          {$$=createNode("KEYWORD",$1,{});}
     | TypeName '.' THIS                                                             {genNode *temp = createNode("KEYWORD",$3,{});genNode *temp1 = createNode("Separator",$2,{} ); $$=createNode("PRIMARYNONEWARRAY","",{$1,temp,temp1});}                                                             
-    | '(' Expression ')'                                                            {//genNode *temp = createNode("Separator",$3,{});genNode *temp1 = createNode("Separator",$1,{} ); $$=createNode("PRIMARYNONEWARRAY","",{$2,temp,temp1});
-                                                                                       $$ = $2; }     
+    | '(' Expression ')'                                                            { $$ = $2; }     
     | ClassInstanceCreationExpression                                               {$$=$1;}
     | FieldAccess                                                                   {$$=$1;}
     | ArrayAccess                                                                   {$$=$1;}
@@ -1028,26 +1490,141 @@ FieldAccess
     ;
 
 ArrayAccess
-    : TypeName '[' Expression ']'                          {genNode *n2 = createNode("Separator",$2,{});genNode *n4 = createNode("Separator",$4,{});$$=createNode("ARRAY","",{$1,n2,$3,n4});}
-    | PrimaryNoNewArray '[' Expression ']'                                             {genNode *n2 = createNode("Separator",$2,{});genNode *n4 = createNode("Separator",$4,{});$$=createNode("ARRAY","",{$1,n2,$3,n4});}
+    : TypeName '[' Expression ']' {
+        genNode* newNode = new genNode;
+		$$ = newNode;
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		Symbol* temp = ST->GetVar(ST->GenTemp());
+		temp->type = ST->GetVar($1->place)->type;
+		$$->place = temp->name;
+		$$->type = ST->GetVar($1->place)->type;
+		if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+			cerr << "Symbol " << $1->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+		TAC* tac = new TAC();
+		tac->op = "getarr";
+		tac->dest = temp;
+		tac->array_name = $1->place;
+		$$->isArray = true;
+		if($3->isLit){
+			tac->isInt2 = true;
+			tac->l2 = $3->place;
+			$$->isLit=true;
+		}
+		else{
+			tac->opd2 = ST->GetVar($3->place);
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			$$->isLit = false;
+
+		}
+		$$->arrayName = $1->place;
+		$$->arrayIndex = $3->place;
+		$$->code.pb(tac);
+        
+    }
+    | PrimaryNoNewArray '[' Expression ']'  {
+       	genNode* newNode = new genNode;
+		$$ = newNode;
+		if($1->isLit){
+			cerr<<"Error: invalid array name at line: "<<line<<endl;
+			exit(1);
+		}
+		$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
+		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		Symbol* temp = ST->GetVar(ST->GenTemp());
+		temp->type = ST->GetVar($1->place)->type;
+		if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+			cerr << "Symbol " << $1->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+		$$->place = temp->name;
+		$$->type = ST->GetVar($1->place)->type;
+		TAC* tac = new TAC();
+		tac->op = "getarr";
+		tac->dest = temp;
+		tac->array_name = $1->place;
+		$$->isArray = true;
+		if($3->isLit){
+			tac->isInt2 = true;
+			tac->l2 = $3->place;
+			$$->isLit=true;
+		}
+		else{
+			tac->opd2 = ST->GetVar($3->place);
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			$$->isLit = false;
+
+		}
+		$$->arrayName = $1->place;
+		$$->arrayIndex = $3->place;
+		$$->code.pb(tac);
+    }
     ;
 
 MethodInvocation
-    : IDENTIFIER '(' ArgumentList ')'                                                  {genNode *temp = createNode("Identifier",$1,{});genNode *temp1 = createNode("Separator",$2,{});genNode *temp2 = createNode("Separator",$4,{});
-                                                                                        $$=createNode("methodInvocation","",{temp,temp1,$3,temp2});}
-    | IDENTIFIER '(' ')'                                                               {genNode *temp = createNode("Identifier",$1,{});genNode *temp2 = createNode("Separator",$2,{});genNode *temp3 = createNode("Separator",$3,{});
-                                                                                       
-                                                                                        $$=createNode("methodInvocation","",{temp,temp2,temp3});}
-    | TypeName '.' IDENTIFIER '(' ArgumentList ')'
-                                                                                       {genNode *temp3 = createNode("Identifier",$3,{});genNode *temp2 = createNode("Separator",$2,{});genNode *temp4 = createNode("Separator",$4,{});genNode *temp6 = createNode("Separator",$6,{});
-                                                                                        $$=createNode("methodInvocation","",{$1,temp2,temp3,temp4,$5,temp6});}
-    | TypeName '.' IDENTIFIER '(' ')'
-                                                                                        {genNode *temp3 = createNode("Identifier",$3,{});genNode *temp2= createNode("Separator",$2,{});genNode *temp4= createNode("Separator",$4,{});genNode *temp5 = createNode("Separator",$5,{});
-                                                                                        $$=createNode("methodInvocation","",{$1,temp2,temp3,temp4,temp5});}
-    | Primary '.' IDENTIFIER '(' ArgumentList ')'                                        {genNode *temp3 = createNode("Identifier",$3,{});genNode *temp2 = createNode("Separator",$2,{});genNode *temp4 = createNode("Separator",$4,{});genNode *temp6 = createNode("Separator",$6,{});
-                                                                                        $$=createNode("methodInvocation","",{$1,temp2,temp3,temp4,$5,temp6});}
-    | Primary '.' IDENTIFIER '(' ')'                                                    {genNode *temp3 = createNode("Identifier",$3,{});genNode *temp2= createNode("Separator",$2,{});genNode *temp4= createNode("Separator",$4,{});genNode *temp5 = createNode("Separator",$5,{});
-                                                                                        $$ = createNode("methodInvocation","",{$1,temp2,temp3,temp4,temp5});}
+    : Identifier '(' ArgumentList ')' {
+        TAC* tac = new TAC();
+		tac->op = "call";
+		tac->isInt1 = true;
+
+		Env* methodEnv = ST->GetMethod($1->place);
+		if(!methodEnv){
+			cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<lineNum<<endl;
+			exit(1);
+		}
+		tac->target = methodEnv->name;
+
+
+		tac->l1 = convertNumToString(methodEnv->argNum);
+		string str1 = ST->GenTemp();
+
+
+		Symbol* sym = ST->GetVar(str1);
+		sym->type = methodEnv->returnType;
+		tac->dest = sym;
+		$$ = $1;
+		if($3->code.size() > 0)	$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		$$->place = str1;
+		$$->type = methodEnv->returnType;
+		$$->code.pb(tac);
+    }
+    | Identifier '(' ')' {
+		TAC* tac = new TAC();
+		tac->op = "call";
+		Env* methodEnv = ST->GetMethod($1->place);
+		if(!methodEnv){
+			cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<line<<endl;
+			exit(1);
+		}
+		tac->target = methodEnv->name;
+		tac->isInt1 = true;
+		tac->l1 = convertNumToString(methodEnv->argNum);
+		string str1 = ST->GenTemp();
+		Symbol* sym = ST->GetVar(str1);
+		sym->type = methodEnv->returnType;
+		tac->dest = sym;
+		$$ = $1;
+		$$->place = str1;
+		$$->type = methodEnv->returnType;
+		$$->code.pb(tac);
+    }
+    // | TypeName '.' Identifier '(' ArgumentList ')'
+    //                                                                                    {genNode *temp3 = createNode("Identifier",$3,{});genNode *temp2 = createNode("Separator",$2,{});genNode *temp4 = createNode("Separator",$4,{});genNode *temp6 = createNode("Separator",$6,{});
+    //                                                                                     $$=createNode("methodInvocation","",{$1,temp2,temp3,temp4,$5,temp6});}
+    // | TypeName '.' Identifier '(' ')'
+    //                                                                                     {genNode *temp3 = createNode("Identifier",$3,{});genNode *temp2= createNode("Separator",$2,{});genNode *temp4= createNode("Separator",$4,{});genNode *temp5 = createNode("Separator",$5,{});
+    //                                                                                     $$=createNode("methodInvocation","",{$1,temp2,temp3,temp4,temp5});}
+    // | Primary '.' Identifier '(' ArgumentList ')'                                        {genNode *temp3 = createNode("Identifier",$3,{});genNode *temp2 = createNode("Separator",$2,{});genNode *temp4 = createNode("Separator",$4,{});genNode *temp6 = createNode("Separator",$6,{});
+    //                                                                                     $$=createNode("methodInvocation","",{$1,temp2,temp3,temp4,$5,temp6});}
+    // | Primary '.' Identifier '(' ')'                                                    {genNode *temp3 = createNode("Identifier",$3,{});genNode *temp2= createNode("Separator",$2,{});genNode *temp4= createNode("Separator",$4,{});genNode *temp5 = createNode("Separator",$5,{});
+    //                                                                                     $$ = createNode("methodInvocation","",{$1,temp2,temp3,temp4,temp5});}
    ;
 
 ArgumentList
@@ -1069,28 +1646,38 @@ MethodReference
    ;
 
 ArrayCreationExpression
-   : NEW PrimitiveType DimExprs Dims                                                    {genNode *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
-   | NEW PrimitiveType DimExprs                                                         {genNode *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3});}                                      
-   | NEW TypeName DimExprs Dims                                  {genNode *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
-   | NEW TypeName DimExprs                                       {genNode *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3});}
-   | NEW PrimitiveType Dims ArrayInitialize                                            {genNode *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
-   | NEW TypeName Dims ArrayInitialize                          {genNode *temp = createNode("KEYWORD",$1,{});
-                                                                                         $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
+   : NEW PrimitiveType '[' Expression ']'  {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->isArray = true;
+		$$->type = $2->type;
+		$$->nodeLen = stoi($4->place);
+   }
+   | NEW TypeName '[' Expression ']' {
+    	genNode* n = new genNode();
+		$$ = n;
+		$$->isArray = true;
+		$$->type = $2->type;
+		$$->nodeLen = stoi($4->place);
+   }
+//    | NEW TypeName '[' Expression ']'                                        {genNode *temp = createNode("KEYWORD",$1,{});
+//                                                                                          $$ = createNode("ARRAY_CREATION","",{temp,$2,$3});}
+//    | NEW PrimitiveType Dims ArrayInitialize  { 
+//     genNode *temp = createNode("KEYWORD",$1,{});
+//                                                                                          $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});
+//    }
+//    | NEW TypeName Dims ArrayInitialize                          {genNode *temp = createNode("KEYWORD",$1,{});
+//                                                                                          $$ = createNode("ARRAY_CREATION","",{temp,$2,$3,$4});}
    ;
 
-DimExprs
-   : DimExpr                                                                            {$$ = createNode("DIMEXPR","", {$1}); }
-   | DimExprs DimExpr                                                                   {$1->children.push_back($2); $$ = $1; }
-   ;
+// DimExprs
+//    : DimExpr                                                                            {$$ = createNode("DIMEXPR","", {$1}); }
+//    | DimExprs DimExpr                                                                   {$1->children.push_back($2); $$ = $1; }
+//    ;
 
-DimExpr
-   : '[' Expression ']'                                                                 {genNode *temp2=createNode("Separator",$1,{});genNode *temp1=createNode("Separator",$3,{});$$ = createNode("DimExpr","", {temp1,temp2,$2});}
-   ;
+// DimExpr
+//    : '[' Expression ']'                                                                 {genNode *temp2=createNode("Separator",$1,{});genNode *temp1=createNode("Separator",$3,{});$$ = createNode("DimExpr","", {temp1,temp2,$2});}
+//    ;
 
 Expression
    : AssignmentExpression                                                               {$$=$1;}
@@ -1102,28 +1689,113 @@ AssignmentExpression
    ;
 
 Assignment
-   : LeftHandSide AssignmentOperator Expression                                         {$2->children={$1,$3};$$=$2;}
-   | TypeName AssignmentOperator Expression                 {$2->children={$1,$3};$$=$2;}
+   : LeftHandSide AssignmentOperator Expression         { 
+    			// assignment_operator is a string
+			$$ = $1;	
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			// TAC* tac = new TAC();
+			
+			Symbol* sym1 = ST->GetVar($1->place);
+			if(sym1->type == "None"){
+				cerr << "Error: Symbol " <<  $1->place << " not defined, at line num: " << endl;
+				exit(1);
+			}
+			if($3->isLit==false){		
+				Symbol* sym2 = ST->GetVar($3->place);
+				if(sym2->type == "None"){
+					cerr << "Error: Symbol "<< $3->place << " not defined, at line num: " << endl;
+					exit(1);
+				}
+				if(sym1->baseType != sym2->baseType){
+					cerr << "Error: Incompatible types at line num: " << endl;
+					exit(1);
+				}
+				if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
+					cerr << "Error: Incompatible types at line num: " << endl;
+					exit(1);
+				}
+			}
+			gen2OpCode($$, $2, $1, $3, line);
+			if($1->isArray == true){
+				TAC* tac = new TAC();
+				tac->op = "setarr";
+				tac->array_name = $1->arrayName;
+				if($1->isLit){
+					tac->isInt1 = true;
+					tac->l1 = $1->arrayIndex;
+				}
+				else{
+					tac->opd1 = ST->GetVar($1->arrayIndex);
+				}
+				tac->opd2 = sym1;
+				$$->code.pb(tac);
+			}			
+
+
+    }
+   | TypeName AssignmentOperator Expression                 { 
+    	// assignment_operator is a string
+			$$ = $1;	
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			// TAC* tac = new TAC();
+			
+			Symbol* sym1 = ST->GetVar($1->place);
+			if(sym1->type == "None"){
+				cerr << "Error: Symbol " <<  $1->place << " not defined, at line num: " << endl;
+				exit(1);
+			}
+			if($3->isLit==false){		
+				Symbol* sym2 = ST->GetVar($3->place);
+				if(sym2->type == "None"){
+					cerr << "Error: Symbol "<< $3->place << " not defined, at line num: " << endl;
+					exit(1);
+				}
+				if(sym1->baseType != sym2->baseType){
+					cerr << "Error: Incompatible types at line num: " << endl;
+					exit(1);
+				}
+				if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
+					cerr << "Error: Incompatible types at line num: " << endl;
+					exit(1);
+				}
+			}
+			gen2OpCode($$, $2, $1, $3, line);
+			if($1->isArray == true){
+				TAC* tac = new TAC();
+				tac->op = "setarr";
+				tac->array_name = $1->arrayName;
+				if($1->isLit){
+					tac->isInt1 = true;
+					tac->l1 = $1->arrayIndex;
+				}
+				else{
+					tac->opd1 = ST->GetVar($1->arrayIndex);
+				}
+				tac->opd2 = sym1;
+				$$->code.pb(tac);
+			}			
+
+   }
    ;
 
 LeftHandSide
-   : FieldAccess                                                                        {$$=$1;}
-   | ArrayAccess                                                                        {$$=$1;}
+   : FieldAccess                                                                        { $$=$1; }
+   | ArrayAccess                                                                        { $$=$1; }
    ;
 
 AssignmentOperator
-   : '='                                                                                {$$=createNode("operator",$1,{});}
-   | MUL_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
-   | DIV_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
-   | MOD_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
-   | ADD_ASSIGN                                                                         {$$=createNode("operator",$1,{});}                                                                               
-   | SUB_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
-   | LEFT_ASSIGN                                                                        {$$=createNode("operator",$1,{});}
-   | RIGHT_ASSIGN                                                                       {$$=createNode("operator",$1,{});}
-   | UNSIGNED_RIGHT_ASSIGN                                                              {$$=createNode("operator",$1,{});}
-   | AND_ASSIGN                                                                         {$$=createNode("operator",$1,{});}  
-   | XOR_ASSIGN                                                                         {$$=createNode("operator",$1,{});}
-   | OR_ASSIGN                                                                          {$$=createNode("operator",$1,{});}
+   : '='                                                                                { $$ = $1;}
+   | MUL_ASSIGN                                                                         {$$ = $1;}
+   | DIV_ASSIGN                                                                         {$$ = $1;}
+   | MOD_ASSIGN                                                                         {$$ = $1;}
+   | ADD_ASSIGN                                                                         {$$ = $1;}                                                                               
+   | SUB_ASSIGN                                                                         {$$ = $1;}
+   | LEFT_ASSIGN                                                                        {$$ = $1;}
+   | RIGHT_ASSIGN                                                                       {$$ = $1;}
+   | UNSIGNED_RIGHT_ASSIGN                                                              {$$ = $1;}
+   | AND_ASSIGN                                                                         {$$ = $1;}  
+   | XOR_ASSIGN                                                                         {$$ = $1;}
+   | OR_ASSIGN                                                                          {$$ = $1;}
    ;
 
 ConditionalExpression

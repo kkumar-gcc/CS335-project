@@ -54,65 +54,66 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    CONTINUE = 258,                /* CONTINUE  */
-    FOR = 259,                     /* FOR  */
-    CHAR = 260,                    /* CHAR  */
-    FINAL = 261,                   /* FINAL  */
-    STATIC = 262,                  /* STATIC  */
-    VOID = 263,                    /* VOID  */
-    CLASS = 264,                   /* CLASS  */
-    LONG = 265,                    /* LONG  */
-    CONST = 266,                   /* CONST  */
-    FLOAT = 267,                   /* FLOAT  */
-    WHILE = 268,                   /* WHILE  */
-    FLOATINGPOINTLITERAL = 269,    /* FLOATINGPOINTLITERAL  */
-    TRUELITERAL = 270,             /* TRUELITERAL  */
-    FALSELITERAL = 271,            /* FALSELITERAL  */
-    NULLLITERAL = 272,             /* NULLLITERAL  */
-    CHARACTERLITERAL = 273,        /* CHARACTERLITERAL  */
-    IDENTIFIER = 274,              /* IDENTIFIER  */
-    STRINGLITERAL = 275,           /* STRINGLITERAL  */
-    BOOLEAN = 276,                 /* BOOLEAN  */
-    PRIVATE = 277,                 /* PRIVATE  */
-    IF = 278,                      /* IF  */
-    PACKAGE = 279,                 /* PACKAGE  */
-    THIS = 280,                    /* THIS  */
-    BREAK = 281,                   /* BREAK  */
-    DOUBLE = 282,                  /* DOUBLE  */
-    BYTE = 283,                    /* BYTE  */
-    ELSE = 284,                    /* ELSE  */
-    PUBLIC = 285,                  /* PUBLIC  */
-    RETURN = 286,                  /* RETURN  */
-    INT = 287,                     /* INT  */
-    SHORT = 288,                   /* SHORT  */
-    ABSTRACT = 289,                /* ABSTRACT  */
-    INTEGERLITERAL = 290,          /* INTEGERLITERAL  */
-    ADD_ASSIGN = 291,              /* ADD_ASSIGN  */
-    SUB_ASSIGN = 292,              /* SUB_ASSIGN  */
-    MUL_ASSIGN = 293,              /* MUL_ASSIGN  */
-    DIV_ASSIGN = 294,              /* DIV_ASSIGN  */
-    MOD_ASSIGN = 295,              /* MOD_ASSIGN  */
-    AND_ASSIGN = 296,              /* AND_ASSIGN  */
-    OR_ASSIGN = 297,               /* OR_ASSIGN  */
-    XOR_ASSIGN = 298,              /* XOR_ASSIGN  */
-    LEFT_ASSIGN = 299,             /* LEFT_ASSIGN  */
-    RIGHT_ASSIGN = 300,            /* RIGHT_ASSIGN  */
-    UNSIGNED_RIGHT_ASSIGN = 301,   /* UNSIGNED_RIGHT_ASSIGN  */
-    OR_OP = 302,                   /* OR_OP  */
-    AND_OP = 303,                  /* AND_OP  */
-    NE_OP = 304,                   /* NE_OP  */
-    EQ_OP = 305,                   /* EQ_OP  */
-    LEFT_OP = 306,                 /* LEFT_OP  */
-    RIGHT_OP = 307,                /* RIGHT_OP  */
-    UNSIGNED_RIGHT_OP = 308,       /* UNSIGNED_RIGHT_OP  */
-    GE_OP = 309,                   /* GE_OP  */
-    LE_OP = 310,                   /* LE_OP  */
-    INSTANCEOF = 311,              /* INSTANCEOF  */
-    NEW = 312,                     /* NEW  */
-    INC_OP = 313,                  /* INC_OP  */
-    DEC_OP = 314,                  /* DEC_OP  */
-    PROPORTION = 315,              /* PROPORTION  */
-    PTR_OP = 316                   /* PTR_OP  */
+    IFX = 258,                     /* IFX  */
+    CONTINUE = 259,                /* CONTINUE  */
+    FOR = 260,                     /* FOR  */
+    CHAR = 261,                    /* CHAR  */
+    FINAL = 262,                   /* FINAL  */
+    STATIC = 263,                  /* STATIC  */
+    VOID = 264,                    /* VOID  */
+    CLASS = 265,                   /* CLASS  */
+    LONG = 266,                    /* LONG  */
+    CONST = 267,                   /* CONST  */
+    FLOAT = 268,                   /* FLOAT  */
+    WHILE = 269,                   /* WHILE  */
+    FLOATINGPOINTLITERAL = 270,    /* FLOATINGPOINTLITERAL  */
+    TRUELITERAL = 271,             /* TRUELITERAL  */
+    FALSELITERAL = 272,            /* FALSELITERAL  */
+    NULLLITERAL = 273,             /* NULLLITERAL  */
+    CHARACTERLITERAL = 274,        /* CHARACTERLITERAL  */
+    IDENTIFIER = 275,              /* IDENTIFIER  */
+    STRINGLITERAL = 276,           /* STRINGLITERAL  */
+    BOOLEAN = 277,                 /* BOOLEAN  */
+    PRIVATE = 278,                 /* PRIVATE  */
+    IF = 279,                      /* IF  */
+    PACKAGE = 280,                 /* PACKAGE  */
+    THIS = 281,                    /* THIS  */
+    BREAK = 282,                   /* BREAK  */
+    DOUBLE = 283,                  /* DOUBLE  */
+    BYTE = 284,                    /* BYTE  */
+    ELSE = 285,                    /* ELSE  */
+    PUBLIC = 286,                  /* PUBLIC  */
+    RETURN = 287,                  /* RETURN  */
+    INT = 288,                     /* INT  */
+    SHORT = 289,                   /* SHORT  */
+    ABSTRACT = 290,                /* ABSTRACT  */
+    INTEGERLITERAL = 291,          /* INTEGERLITERAL  */
+    ADD_ASSIGN = 292,              /* ADD_ASSIGN  */
+    SUB_ASSIGN = 293,              /* SUB_ASSIGN  */
+    MUL_ASSIGN = 294,              /* MUL_ASSIGN  */
+    DIV_ASSIGN = 295,              /* DIV_ASSIGN  */
+    MOD_ASSIGN = 296,              /* MOD_ASSIGN  */
+    AND_ASSIGN = 297,              /* AND_ASSIGN  */
+    OR_ASSIGN = 298,               /* OR_ASSIGN  */
+    XOR_ASSIGN = 299,              /* XOR_ASSIGN  */
+    LEFT_ASSIGN = 300,             /* LEFT_ASSIGN  */
+    RIGHT_ASSIGN = 301,            /* RIGHT_ASSIGN  */
+    UNSIGNED_RIGHT_ASSIGN = 302,   /* UNSIGNED_RIGHT_ASSIGN  */
+    OR_OP = 303,                   /* OR_OP  */
+    AND_OP = 304,                  /* AND_OP  */
+    NE_OP = 305,                   /* NE_OP  */
+    EQ_OP = 306,                   /* EQ_OP  */
+    LEFT_OP = 307,                 /* LEFT_OP  */
+    RIGHT_OP = 308,                /* RIGHT_OP  */
+    UNSIGNED_RIGHT_OP = 309,       /* UNSIGNED_RIGHT_OP  */
+    GE_OP = 310,                   /* GE_OP  */
+    LE_OP = 311,                   /* LE_OP  */
+    INSTANCEOF = 312,              /* INSTANCEOF  */
+    NEW = 313,                     /* NEW  */
+    INC_OP = 314,                  /* INC_OP  */
+    DEC_OP = 315,                  /* DEC_OP  */
+    PROPORTION = 316,              /* PROPORTION  */
+    PTR_OP = 317                   /* PTR_OP  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -127,7 +128,7 @@ union YYSTYPE
     int ival;
     class genNode *node;
 
-#line 131 "parser.tab.h"
+#line 132 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
