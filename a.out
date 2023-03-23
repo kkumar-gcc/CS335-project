@@ -1,0 +1,29 @@
+_a int 3 Identifier 
+_main None 4 Identifier 
+_milestone2 None 1 Identifier 
+_src None 1 Identifier 
+_test_1 None 2 Identifier 
+
+scope1
+_args int 4 Identifier 
+_array int 7 Identifier 
+_b int 5 Identifier 
+_c int 4 8 Identifier 
+_d char 6 Identifier 
+_main1 None 12 Identifier 
+_tVar_0 None 0 Identifier 
+_tVar_1 None 0 Identifier 
+_tVar_2 None 0 Identifier 
+_tVar_3 None 0 Identifier 
+
+scope2
+_args1 int 12 Identifier 
+_b1 int 13 Identifier 
+_c1 int 12 Identifier 
+_main2 None 16 Identifier 
+
+scope3
+_args2 int 16 Identifier 
+_b2 int 17 Identifier 
+_c2 int 16 Identifier 
+
