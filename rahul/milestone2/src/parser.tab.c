@@ -5807,14 +5807,13 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 2279 "parser.y"
+#line 2276 "parser.y"
 
 
 int main (void) {
     yyparse();
 
     // generateDotFile();
-    cout<< "\n\n\n";
     ST->PrintTable(ST->baseEnv);
 	printTAC(root);
     

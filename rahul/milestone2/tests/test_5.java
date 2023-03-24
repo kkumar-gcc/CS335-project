@@ -15,9 +15,6 @@ public class test_5 {
         numbers[2]=7;
         for (int i = 0; i < 3; i++) {
             numbers[i]+=1;
-            ++i;
-            // System.out.println("Value at index " + i + ": " + numbers[i]);
-            
         }
         return c+numbers[1];
     }

@@ -1,77 +1,34 @@
-
-
-
 BLOCKTYPE None 
 
 scope1
-CLASSTYPE test_8 
-main None 2 Identifier 
-main2 None 68 Identifier 
-sumArray None 53 Identifier 
-test_8 None 1 Identifier 
+CLASSTYPE test_3 
+main None 3 Identifier 
+test_3 None 1 Identifier 
 
 scope2
 main main 
-String None 2 7 13 Identifier 
-args String 2 Identifier 
+String None 3 Identifier 
+args String 3 Identifier 
 
 scope3
 BLOCKTYPE None 
-$$NOOO double 5 Identifier 
-$Beaware double 4 Identifier 
-_$_$YEs long 6 Identifier 
-arr int 11 Identifier 
-b boolean 15 Identifier 
-d double 14 Identifier 
-i int 33 34 36 Identifier 
+j int 4 7 9 11 13 Identifier 
 label_0 label 0 Identifier 
 label_1 label 0 Identifier 
 label_2 label 0 Identifier 
-p String 7 Identifier 
-str String 13 Identifier 
-t_0 None 0 Identifier 
-t_1 None 0 Identifier 
-t_2 None 0 Identifier 
-t_3 boolean 0 Identifier 
+label_3 label 0 Identifier 
+label_4 label 0 Identifier 
+label_5 label 0 Identifier 
+num int 5 6 8 Identifier 
+t_0 boolean 0 Identifier 
+t_1 boolean 0 Identifier 
 
 scope4
 BLOCKTYPE None 
 
 scope5
-sumArray sumArray 
-arr int 53 55 56 Identifier 
+BLOCKTYPE None 
 
 scope6
 BLOCKTYPE None 
-sum int 54 56 58 Identifier 
-
-scope7
-BLOCKTYPE None 
-i int 55 55 55 56 Identifier 
-label_3 label 0 Identifier 
-label_4 label 0 Identifier 
-label_5 label 0 Identifier 
-label_6 label 0 Identifier 
-length None 55 Identifier 
-t_4 boolean 0 Identifier 
-
-scope8
-BLOCKTYPE None 
-t_5 int 0 Identifier 
-
-scope9
-CLASSTYPE Node 
-Node None 62 64 65 Identifier 
-data None 63 Identifier 
-left None 64 Identifier 
-right None 65 Identifier 
-
-scope10
-main2 main2 
-String None 68 Identifier 
-args String 68 Identifier 
-
-scope11
-BLOCKTYPE None 
-d int 69 Identifier 
 
