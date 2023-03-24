@@ -1,42 +1,63 @@
-package milestone2.src;
-public class test_1 {
-    int a = 5;
-    int c;
-    public void main(int f,int a) {
-        // int a = 6;
-        int b = 5;
-        int c= a+b;
-        // bool d= c||b;
-        if(a>5){
-           main1(2,3);
-        }
-        else{
-            System.out.println(b);
-        }
-        int i;
-        for (i = 1; i <= 5; i++) {
-            System.out.println("Value of i: ");
-        }
-        int j = 1;
-        while (j <= 5) {
-            // System.out.println("Value of j: " + j);
-            j++;
-        }
-        int[] numbers = {1, 2, 3, 4, 5};
-        for (i = 0; i < numbers.length; i++) {
-            System.out.println(numbers[i]);
-        }
-        // String[] fruits = new String[3];
-        // fruits[0] = "Apple";
-        // fruits[1] = "Banana";
-        // fruits[2] = "Orange";
-        int fruits[]={1,2,3};
-        
-    }
-    public void main1(int args1,int c1) {
-        int b1=5;
-        
-    }
+package project.unittests;
 
-};
+class Inner1 {
+    long a[];
+    float b[][];
 
+    // public Inner1(int dim1, int dim2, int dim3) {
+
+    //     a = new long[1];
+    //     b = new float[1][2];
+    //     initalize(dim1, dim2, dim3);
+    // }
+
+    void initalize(int dim1, int dim2, int dim3) {
+       long a[] = new long[2];
+        for (int i = 0; i < dim1; i++) {
+            a[i] = i;
+        }
+        // for (int j = 0; j < dim2; j++) {
+        //     for (int k = 0; k < dim3; k++) {
+        //         b[j][k] = j + k;
+        //     }
+        // }
+    }
+}
+
+// class Inner2 {
+//     // int c[][] = new int[3][3];
+//     double d[] = new double[4];
+
+//     // public Inner2(int dim1, int dim2, int dim3) {
+//     //     // c = new int[dim1][dim2];
+//     //     // d = new double[dim3];
+//     //     init(dim1, dim2, dim3);
+//     // }
+
+//     void init(int dim1, int dim2, int dim3) {
+//         // for (int i = 0; i < dim1; i++) {
+//         //     for (int j = 0; j < dim2; j++) {
+//         //         c[i][j] = i + j;
+//         //     }
+//         // }
+
+//         for (int i = 0; i < dim3; i++) {
+//             d = i;
+//         }
+//     }
+
+// }
+
+class ArrayTypeCheck {
+    public static void main(String[] args) {
+
+        Inner1 obj1 = new Inner1(3, 4, 5);
+        // Inner2 obj2 = new Inner2(1, 2, 3);
+
+        // float a = obj1.b[2][2];
+
+        int b[] = new int[2];
+        // b[1] = obj2.c[0][1];
+        // System.out.println();
+    }
+}

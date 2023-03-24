@@ -49,7 +49,6 @@ bool isOpIn(string *opA, int n, string op)
 void printTAC(genNode *node)
 {
 	int siz = node->code.size();
-	cout<<siz<<endl;
 	TAC *t;
 	fori(0, siz)
 	{
@@ -669,6 +668,27 @@ void getPreUnaryOpCode(string op, genNode *d, genNode *s, int lineNum)
 		tac->op = "-";
 	d->code.insert(d->code.begin(), tac);
 }
+
+void getPostUnaryOpCode(string op, genNode *d, genNode *s, int lineNum)
+{
+	TAC *tac = new TAC();
+	Symbol *sym = ST->GetVar(d->place);
+	if (!(d->isLit) && ST->GetVar(d->place)->type == "None")
+	{
+		cerr << "Symbol " << d->place << " not defined, at line: " << lineNum;
+		exit(1);
+	}
+	tac->opd1 = sym;
+	tac->dest = sym;
+	tac->isInt2 = true;
+	tac->l2 = "1";
+	if (op == "++")
+		tac->op = "+";
+	else
+		tac->op = "-";
+	d->code.insert(d->code.begin(), tac);
+}
+
 
 TAC *genLabelTAC(string labelName)
 {

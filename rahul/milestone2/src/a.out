@@ -1,98 +1,70 @@
-37
-1, label, _test_1
-2, =, _a, 5
-3, label, _main
-4, readParam, _a
-5, readParam, _f
-6, =, _b, 5
-7, +, _tVar_0, _a, _b
-8, =, _c, _tVar_0
-9, >, _tVar_1, _a, 5
-10, ifgoto, _tVar_1, label_0
-11, goto, label_1
-12, label, label_0
-13, goto, label_2
-14, label, label_1
-15, label, label_2
-16, =, _j, 1
-17, label, label_3
-18, <=, _tVar_3, _j, 5
-19, ifgoto, _tVar_3, label_4
-20, goto, label_5
-21, label, label_4
-22, goto, label_3
-23, label, label_5
-24, =, _tVar_4, 1
-25, =, _tVar_5, 2
-26, =, _tVar_6, 3
-27, =, _tVar_7, 4
-28, =, _tVar_8, 5
-29, =, _numbers, 1
-30, =, _tVar_10, 1
-31, =, _tVar_11, 2
-32, =, _tVar_12, 3
-33, =, _fruits, 1
-34, label, _main1
-35, readParam, _c1
-36, readParam, _args1
-37, =, _b1, 5
+1, label, _Inner1
+2, label, _initalize
+3, readParam, _dim3
+4, readParam, _dim2
+5, readParam, _dim1
+6, =, _i, 0
+7, label, label_0
+8, <, _tVar_0, _i, _dim1
+9, ifgoto, _tVar_0, label_1
+10, goto, label_2
+11, label, label_1
+12, getarr, _tVar_1, _a, _i
+13, =, _tVar_1, _i
+14, setarr, _a, _i, _tVar_1
+15, label, label_3
+16, +, _i, _i, 1
+17, goto, label_0
+18, label, label_2
 
 
 
-_a int 3 5 8 10 Identifier 
-_c int 4 8 Identifier 
-_main None 5 Identifier 
-_main1 None 36 Identifier 
-_milestone2 None 1 Identifier 
-_src None 1 Identifier 
-_test_1 None 2 Identifier 
+BLOCKTYPE None 
+_project None 1 Identifier 
+_unittests None 1 Identifier 
 
 scope1
-_System None 14 18 27 Identifier 
-_b int 7 8 14 Identifier 
-_f int 5 Identifier 
-_fruits int 33 Identifier 
-_i int 16 17 17 17 26 26 26 27 Identifier 
-_j int 20 21 23 Identifier 
+CLASSTYPE _Inner1 
+_Inner1 None 3 Identifier 
+_a long 4 15 17 Identifier 
+_b None 5 Identifier 
+_initalize None 14 Identifier 
+
+scope2
+_initalize _initalize 
+_dim1 int 14 16 Identifier 
+_dim2 int 14 Identifier 
+_dim3 int 14 Identifier 
+
+scope3
+BLOCKTYPE None 
+
+scope4
+BLOCKTYPE None 
+_i int 16 16 16 17 17 Identifier 
 _label_0 label 0 Identifier 
 _label_1 label 0 Identifier 
 _label_2 label 0 Identifier 
 _label_3 label 0 Identifier 
-_label_4 label 0 Identifier 
-_label_5 label 0 Identifier 
-_length None 26 Identifier 
-_numbers int 25 26 27 Identifier 
-_out None 14 18 27 Identifier 
-_tVar_0 int 0 Identifier 
-_tVar_1 bool 0 Identifier 
-_tVar_10 None 0 Identifier 
-_tVar_11 None 0 Identifier 
-_tVar_12 None 0 Identifier 
-_tVar_2 bool 0 Identifier 
-_tVar_3 bool 0 Identifier 
-_tVar_4 None 0 Identifier 
-_tVar_5 None 0 Identifier 
-_tVar_6 None 0 Identifier 
-_tVar_7 None 0 Identifier 
-_tVar_8 None 0 Identifier 
-_tVar_9 bool 0 Identifier 
-
-scope2
-
-scope3
-
-scope4
+_tVar_0 bool 0 Identifier 
 
 scope5
+BLOCKTYPE None 
+_tVar_1 long 0 Identifier 
 
 scope6
+CLASSTYPE _ArrayTypeCheck 
+_ArrayTypeCheck None 51 Identifier 
+_main None 52 Identifier 
 
 scope7
+_main _main 
+_String None 52 Identifier 
+_args _String 52 Identifier 
 
 scope8
-_args1 int 36 Identifier 
-_b1 int 37 Identifier 
-_c1 int 36 Identifier 
-
-scope9
+BLOCKTYPE None 
+_Inner1 None 54 54 Identifier 
+_b int 59 Identifier 
+_obj1 _Inner1 54 Identifier 
 

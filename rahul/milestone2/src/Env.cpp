@@ -187,24 +187,8 @@ Env *Env::getMethodFromClass(string methodName, string className, Env *baseEnv)
 int t=0;
 void Env::printTableEnv(Env *env)
 {
-	for (map<string, Symbol *>::iterator it = (env->methodList.begin()); it != (env->methodList.end()); it++)
-	{
-		cout << (((*it).se)->name) << " " << (((*it).se)->type) << " ";
-		for (auto element : (((*it).se)->line))
-		{
-			cout << element << " ";
-		}
-		cout << (((*it).se)->token) << " " << endl;
-	}
-	for (map<string, Symbol *>::iterator it = (env->varList.begin()); it != (env->varList.end()); it++)
-	{
-		cout << (((*it).se)->name) << " " << (((*it).se)->type) << " ";
-		for (auto element : (((*it).se)->line))
-		{
-			cout << element << " ";
-		}
-		cout << (((*it).se)->token) << " " << endl;
-	}
+	cout<<env->type<<" "<<env->name<<" "<<endl;
+
 	for (map<string, Symbol *>::iterator it = (env->addTable.begin()); it != (env->addTable.end()); it++)
 	{
 		cout << (((*it).se)->name) << " " << (((*it).se)->type) << " ";
@@ -219,10 +203,11 @@ void Env::printTableEnv(Env *env)
 	int siz = (env->children).size();
 	
 	fori(0, siz)
-	{   
+	{   if(siz>=0){
 		t++;
 		cout<<"scope"<<t<<endl;
 		printTableEnv((env->children)[i]);
+	}
 	}
 }
 
