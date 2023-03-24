@@ -29,7 +29,7 @@ string Env::getMethodType()
 string Env::genTemp(string varType = "None", string genericType = "simple", int _width = 0, string varToken = "Identifier", int lineNum = 0)
 {
 
-	string place = "tVar_" + to_string(tempCounter);
+	string place = "t_" + to_string(tempCounter);
 	tempCounter += 1;
 
 	_width = getWidth(varType, genericType, _width);

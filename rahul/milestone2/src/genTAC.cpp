@@ -1,5 +1,5 @@
 #include "IR.h"
-
+#include <fstream>
 class genNode
 {
 
@@ -48,6 +48,8 @@ bool isOpIn(string *opA, int n, string op)
 
 void printTAC(genNode *node)
 {
+	ofstream output;
+	output.open("3ac.txt");
 	int siz = node->code.size();
 	TAC *t;
 	fori(0, siz)
@@ -68,7 +70,7 @@ void printTAC(genNode *node)
 
 		if (t == NULL)
 		{
-			cerr << "line number %d has the tac struct empty\n";
+			cerr << "line number %d has the tac class empty\n";
 			exit(1);
 		}
 		cerr << t->op << "\t\t";
@@ -77,91 +79,109 @@ void printTAC(genNode *node)
 		case 3:
 			if (t->op == "call")
 			{
-				cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->target << ", " << t->l1;
+				output << t->op << ", " << t->dest->name << " " << t->target << ", " << t->l1;
 			}
 			else if (t->op == "setarr")
 			{
 				if (!t->isInt1 && !t->isInt2)
 				{
-					cout << t->lineNum << ", " << t->op << ", " << t->array_name << ", " << t->opd1->name << ", " << t->opd2->name;
+					output << t->array_name << "[" << t->opd1->name << "]"
+						 << " = " << t->opd2->name;
+					// cout<< t->op << ", " << t->array_name << ", " << t->opd1->name << ", " << t->opd2->name;
 				}
 				else if (t->isInt1 && !t->isInt2)
 				{
-					cout << t->lineNum << ", " << t->op << ", " << t->array_name << ", " << t->l1 << ", " << t->opd2->name;
+					output << t->array_name << "[" << t->l1 << "]"
+						 << " = " << t->opd2->name;
+					// cout<< t->op << ", " << t->array_name << ", " << t->l1 << ", " << t->opd2->name;
 				}
 				else if (!t->isInt1 && t->isInt2)
 				{
-					cout << t->lineNum << ", " << t->op << ", " << t->array_name << ", " << t->opd1->name << ", " << t->l2;
+					output << t->array_name << "[" << t->opd1->name << "]"
+						 << " = " << t->l2;
+					// cout<< t->op << ", " << t->array_name << ", " << t->opd1->name << ", " << t->l2;
 				}
 				else
 				{
-					cout << t->lineNum << ", " << t->op << ", " << t->array_name << ", " << t->l1 << ", " << t->l2;
+					output << t->array_name << "[" << t->l1 << "]"
+						 << " = " << t->l2;
+					// cout<< t->op << ", " << t->array_name << ", " << t->l1 << ", " << t->l2;
 				}
 			}
 			else if (t->op == "getarr")
 			{
 				if (!t->isInt2)
 				{
-					cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->array_name << ", " << t->opd2->name;
+					output << t->dest->name << " = " << t->array_name << "[" << t->opd2->name << "]";
+					// cout<< t->op << ", " << t->dest->name << ", " << t->array_name << ", " << t->opd2->name;
 				}
 				else
 				{
-					cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->array_name << ", " << t->l2;
+					output << t->dest->name << " = " << t->array_name << "[" << t->l2 << "]";
+					// cout<< t->op << ", " << t->dest->name << ", " << t->array_name << ", " << t->l2;
 				}
 			}
 			else if (!t->isInt1 && !t->isInt2)
 			{
-				cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->opd1->name << ", " << t->opd2->name;
+				output << t->dest->name << " = " << t->opd1->name << " " << t->op << " " << t->opd2->name;
 			}
 			else if (t->isInt1 && !t->isInt2)
 			{
-				cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1 << ", " << t->opd2->name;
+				output << t->dest->name << " = " << t->l1 << " " << t->op << " " << t->opd2->name;
 			}
 			else if (!t->isInt1 && t->isInt2)
 			{
-				cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->opd1->name << ", " << t->l2;
+				output << t->dest->name << " = " << t->opd1->name << " " << t->op << " " << t->l2;
 			}
 			else
 			{
-				cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1 << ", " << t->l2;
+				output << t->dest->name << " = " << t->l1 << " " << t->op << " " << t->l2;
 			}
 			break;
 		case 2:
 			if (!(t->isInt1))
 			{
 				if (t->op == "ifgoto")
-					cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->target;
+				{
+					output << "if " << t->dest->name << " goto " << t->target;
+				}
 				else
-					cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->opd1->name;
+				{
+					output << t->dest->name << " " << t->op << " " << t->opd1->name;
+					// cout<< t->op << ", " << t->dest->name << ", " << t->opd1->name;
+				}
 			}
 			else
-				cout << t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1;
+				output << t->dest->name << " " << t->op << " " << t->l1;
+			// cout<< t->op << ", " << t->dest->name << ", " << t->l1;
 			break;
 		case 1:
 			if (t->op == "++" || t->op == "--" || t->op == "printint" || t->op == "scan")
 			{
-				cout << t->lineNum << ", " << t->op << ", " << t->dest->name;
+				// cout<< t->op << ", " << t->dest->name;
+				output << t->dest->name << "helo " << t->op;
 				break;
 			}
 			else if (t->op == "retint")
 			{
 				if (t->isInt1)
-					cout << t->lineNum << ", " << t->op << ", " << t->l1;
+					output << t->op << " " << t->l1;
 				else
-					cout << t->lineNum << ", " << t->op << ", " << t->dest->name;
+					output << t->op << " " << t->dest->name;
 			}
-			cout << t->lineNum << ", " << t->op << ", " << t->target;
+			output << t->op << " " << t->target;
 			break;
 		case -1:
-			cout << t->lineNum << ", " << t->op;
+			output << t->op;
 			break;
 		default:
 			cerr << "Error: Wrong opType\n";
 			exit(1);
 		}
 
-		cout << endl;
+		output << endl;
 	}
+	output.close();
 }
 
 string getNewLabel()
@@ -291,7 +311,7 @@ void gen2OpCode(genNode *d, string op = "", genNode *s1 = NULL, genNode *s2 = NU
 			exit(1);
 		}
 		if (op == "==" || op == "<" || op == ">" || op == "!=" || op == "<=" || op == ">=")
-			temptype = "bool";
+			temptype = "boolean";
 		string tempName = ST->GenTemp();
 		Symbol *temp = ST->GetVar(tempName);
 		d->place = temp->name;
@@ -377,12 +397,12 @@ void gen2OpCode(genNode *d, string op = "", genNode *s1 = NULL, genNode *s2 = NU
 		}
 
 		// type-checking
-		if (s1->type != "bool" || s2->type != "bool")
+		if (s1->type != "boolean" || s2->type != "boolean")
 		{
-			cerr << "Error: Incompatible types; should be bool, at line: " << lineNum << endl;
+			cerr << "Error: Incompatible types; should be boolean, at line: " << lineNum << endl;
 			exit(1);
 		}
-		temptype = "bool";
+		temptype = "boolean";
 		string tempName = ST->GenTemp();
 		Symbol *temp = ST->GetVar(tempName);
 		d->place = temp->name;
@@ -688,7 +708,6 @@ void getPostUnaryOpCode(string op, genNode *d, genNode *s, int lineNum)
 		tac->op = "-";
 	d->code.insert(d->code.begin(), tac);
 }
-
 
 TAC *genLabelTAC(string labelName)
 {

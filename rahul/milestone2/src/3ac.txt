@@ -1,0 +1,43 @@
+label test_8
+label main
+readParam args
+$Beaware = 0x0___00___0.1___1___1p0____0d
+$$NOOO = .0____0e-0_____0
+_$_$YEs = 0
+p = "hello world"
+t_0 = 1
+t_1 = 2
+t_2 = 3
+arr = 1
+str = "Hello, world!"
+d = 3.14159
+b = true
+i = 0
+label label_0
+t_3 = i < 5
+if t_3 goto label_1
+goto label_2
+label label_1
+i = i + 1
+goto label_0
+label label_2
+label sumArray
+readParam arr
+sum = 0
+i = 0
+label label_3
+t_4 = i < arr
+if t_4 goto label_4
+goto label_5
+label label_4
+t_5 = arr[i]
+sum += t_5
+label label_6
+i = i + 1
+goto label_3
+label label_5
+retint sumretint 
+label Node
+label main2
+readParam args
+d = 6

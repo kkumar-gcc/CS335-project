@@ -1,70 +1,77 @@
-1, label, _Inner1
-2, label, _initalize
-3, readParam, _dim3
-4, readParam, _dim2
-5, readParam, _dim1
-6, =, _i, 0
-7, label, label_0
-8, <, _tVar_0, _i, _dim1
-9, ifgoto, _tVar_0, label_1
-10, goto, label_2
-11, label, label_1
-12, getarr, _tVar_1, _a, _i
-13, =, _tVar_1, _i
-14, setarr, _a, _i, _tVar_1
-15, label, label_3
-16, +, _i, _i, 1
-17, goto, label_0
-18, label, label_2
 
 
 
 BLOCKTYPE None 
-_project None 1 Identifier 
-_unittests None 1 Identifier 
 
 scope1
-CLASSTYPE _Inner1 
-_Inner1 None 3 Identifier 
-_a long 4 15 17 Identifier 
-_b None 5 Identifier 
-_initalize None 14 Identifier 
+CLASSTYPE test_8 
+main None 2 Identifier 
+main2 None 68 Identifier 
+sumArray None 53 Identifier 
+test_8 None 1 Identifier 
 
 scope2
-_initalize _initalize 
-_dim1 int 14 16 Identifier 
-_dim2 int 14 Identifier 
-_dim3 int 14 Identifier 
+main main 
+String None 2 7 13 Identifier 
+args String 2 Identifier 
 
 scope3
 BLOCKTYPE None 
+$$NOOO double 5 Identifier 
+$Beaware double 4 Identifier 
+_$_$YEs long 6 Identifier 
+arr int 11 Identifier 
+b boolean 15 Identifier 
+d double 14 Identifier 
+i int 33 34 36 Identifier 
+label_0 label 0 Identifier 
+label_1 label 0 Identifier 
+label_2 label 0 Identifier 
+p String 7 Identifier 
+str String 13 Identifier 
+t_0 None 0 Identifier 
+t_1 None 0 Identifier 
+t_2 None 0 Identifier 
+t_3 boolean 0 Identifier 
 
 scope4
 BLOCKTYPE None 
-_i int 16 16 16 17 17 Identifier 
-_label_0 label 0 Identifier 
-_label_1 label 0 Identifier 
-_label_2 label 0 Identifier 
-_label_3 label 0 Identifier 
-_tVar_0 bool 0 Identifier 
 
 scope5
-BLOCKTYPE None 
-_tVar_1 long 0 Identifier 
+sumArray sumArray 
+arr int 53 55 56 Identifier 
 
 scope6
-CLASSTYPE _ArrayTypeCheck 
-_ArrayTypeCheck None 51 Identifier 
-_main None 52 Identifier 
+BLOCKTYPE None 
+sum int 54 56 58 Identifier 
 
 scope7
-_main _main 
-_String None 52 Identifier 
-_args _String 52 Identifier 
+BLOCKTYPE None 
+i int 55 55 55 56 Identifier 
+label_3 label 0 Identifier 
+label_4 label 0 Identifier 
+label_5 label 0 Identifier 
+label_6 label 0 Identifier 
+length None 55 Identifier 
+t_4 boolean 0 Identifier 
 
 scope8
 BLOCKTYPE None 
-_Inner1 None 54 54 Identifier 
-_b int 59 Identifier 
-_obj1 _Inner1 54 Identifier 
+t_5 int 0 Identifier 
+
+scope9
+CLASSTYPE Node 
+Node None 62 64 65 Identifier 
+data None 63 Identifier 
+left None 64 Identifier 
+right None 65 Identifier 
+
+scope10
+main2 main2 
+String None 68 Identifier 
+args String 68 Identifier 
+
+scope11
+BLOCKTYPE None 
+d int 69 Identifier 
 

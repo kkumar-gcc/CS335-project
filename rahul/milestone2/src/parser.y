@@ -74,8 +74,10 @@ long long int line=1;
 %type <node> ForUpdate StatementExpressionList  BreakStatement
 
 %%
-Start : CompilationUnit { $$ = $1;
-        printTAC($$);
+Start : CompilationUnit { 
+	    $$ = $1;
+        // printTAC($$);
+		root = $$;
       }
       ;
 CompilationUnit : 
@@ -107,7 +109,7 @@ TypeName
 Identifier 
     : IDENTIFIER   { 
         string s1($1);
-		Symbol* sym = ST->GetVar("_" + s1);
+		Symbol* sym = ST->GetVar(s1);
 					
 		if(sym == NULL){
 			sym = ST->AddVar(s1,"None","simple",-1,"Identifier",line);
@@ -683,19 +685,19 @@ ConstructorDeclarator
     ;
 
 ConstructorBody
-    : '{' ExplicitConstructorInvocation BlockStatements '}'                { genNode *n1 = createNode("Separator", $1, {});genNode *n4= createNode("Separator", $4, {});$$ = createNode("ConstructorBody","",{n1,$2,$3,n4}); }
-    | '{' BlockStatements '}'                                              { genNode *n1 = createNode("Separator", $1, {});genNode *n3= createNode("Separator", $3, {});$$ = createNode("ConstructorBody","",{n1,$2,n3}); }
-    | '{' ExplicitConstructorInvocation '}'                                { genNode *n1 = createNode("Separator", $1, {});genNode *n3= createNode("Separator", $3, {});$$ = createNode("ConstructorBody","",{n1,$2,n3}); }
-    | '{' '}'                                                              { genNode *n1 = createNode("Separator", $1, {});genNode *n2= createNode("Separator", $2, {});$$ = createNode("ConstructorBody","",{n1,n2}); }
+    : '{' ExplicitConstructorInvocation BlockStatements '}'                {  }
+    | '{' BlockStatements '}'                                              {  }
+    | '{' ExplicitConstructorInvocation '}'                                {  }
+    | '{' '}'                                                              {  }
     ;
 
 ExplicitConstructorInvocation
-    : THIS SINGLE_ArgumentList                                             { genNode * n1 = createNode("KEYWORD", $1, {});$$ = createNode("ExplicitConstructorInvocation","", {n1,$2}); }
+    : THIS SINGLE_ArgumentList                                             {  }
     ;
 
 SINGLE_ArgumentList
-    : '(' ')' ';'                                      { genNode *n1 = createNode("Separator", $1, {});genNode *n2 = createNode("Separator", $2, {});genNode *n3 = createNode("Separator", $3, {});$$ = createNode("SINGLE_ArgumentList","",{n1,n2,n3});  }
-    | '(' ArgumentList ')' ';'                         { genNode *n1 = createNode("Separator", $1, {});genNode *n3 = createNode("Separator", $3, {});genNode *n4 = createNode("Separator", $4, {});$$ = createNode("SINGLE_ArgumentList","",{n1,$2,n3,n4});  }
+    : '(' ')' ';'                                      {   }
+    | '(' ArgumentList ')' ';'                         {   }
     ;
 
 Block
@@ -983,100 +985,578 @@ ForStatementNoShortIf
     ;
 
 BasicForStatement
-    : BlockStart FOR '(' ForInit ';' Expression ';' ForUpdate ')' Statement   { 
-		   			$$ = $4;
-			string conditionLabel = getNewLabel();
-			TAC* tac = new TAC();
-			tac->op = "label";
-			tac->target = conditionLabel;
+    : BlockStart FOR '(' ';' ';' ')' Statement   { 
+		genNode* newNode = new genNode();
+		$$ = newNode;
 
-			string inLoopLabel = getNewLabel();			
-			string endLoopLabel = getNewLabel();
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string endLoopLabel = getNewLabel();
 			
-			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
 
-			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
-			if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
-				cerr << "Symbol " << $6->place << " not defined, at line: " <<line;
-				exit(1);
-			}
+		TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
-			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+		$$->code.pb(tac);
+		if($7->code.size() > 0)
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 
-			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+		$$->code.pb(tac2);
+		$$->code.pb(tac1);
 
-			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, conditionLabel);
 
-			string updateLabel = getNewLabel();
-			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ForInit ';' ';' ')' Statement   { 
+		$$ = $4;
 
-			$$->code.pb(tac);
-			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
 
-			$$->code.pb(tac2);
-			$$->code.pb(tac3);
-			$$->code.pb(tac1);
-			if($10->code.size() > 0)
-				$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
-			$$->code.pb(tac_);
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+		$$->code.pb(tac);
+		if($8->code.size() > 0)
 			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
-			$$->code.pb(tac5);
-			$$->code.pb(tac4);
 
-			updateBreak($$, endLoopLabel);
-			updateContinue($$, updateLabel);
+		$$->code.pb(tac2);
+		$$->code.pb(tac1);
 
-			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
-			ST->curEnv = ST->curEnv->prevEnv;
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, conditionLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ';' Expression ';' ')' Statement   { 
+		genNode* newNode = new genNode();
+		$$ = newNode;
+
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string inLoopLabel = getNewLabel();			
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+		if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+			cerr << "Symbol " << $5->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+
+		TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+		TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+		TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+		$$->code.pb(tac);
+
+		$$->code.pb(tac2);
+		$$->code.pb(tac3);
+		$$->code.pb(tac1);
+		if($8->code.size() > 0)
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+		$$->code.pb(tac5);
+		$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, conditionLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ';' ';' ForUpdate ')' Statement   { 
+		genNode* newNode = new genNode();
+		$$ = newNode;
+
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+		string updateLabel = getNewLabel();
+		TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+		$$->code.pb(tac);
+		if($8->code.size() > 0)
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+		$$->code.pb(tac_);
+		$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+		$$->code.pb(tac2);
+		$$->code.pb(tac1);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+        ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ForInit ';' Expression ';' ')' Statement   { 
+		$$ = $4;
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string inLoopLabel = getNewLabel();			
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+		if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
+			cerr << "Symbol " << $6->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+
+		TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+		TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+		TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+		$$->code.pb(tac);
+		$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+
+		$$->code.pb(tac2);
+		$$->code.pb(tac3);
+		$$->code.pb(tac1);
+		if($9->code.size() > 0)
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+		$$->code.pb(tac5);
+		$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, conditionLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ForInit ';' ';' ForUpdate ')' Statement {
+		$$ = $4;
+
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+		string updateLabel = getNewLabel();
+		TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+		$$->code.pb(tac);
+		if($9->code.size() > 0)
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+		$$->code.pb(tac_);
+		$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+		$$->code.pb(tac2);
+		$$->code.pb(tac1);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '('  ';' Expression ';' ForUpdate ')' Statement {
+		genNode* newNode = new genNode();
+		$$ = newNode;
+
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string inLoopLabel = getNewLabel();			
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+		if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+			cerr << "Symbol " << $5->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+
+		TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+		TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+		TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+		string updateLabel = getNewLabel();
+		TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+		$$->code.pb(tac);
+
+		$$->code.pb(tac2);
+		$$->code.pb(tac3);
+		$$->code.pb(tac1);
+		if($9->code.empty()){
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+		}
+		$$->code.pb(tac_);
+		$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+		$$->code.pb(tac5);
+		$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ForInit ';' Expression ';' ForUpdate ')' Statement   { 
+		$$ = $4;
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string inLoopLabel = getNewLabel();			
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+		if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
+			cerr << "Symbol " << $6->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+
+		TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+		TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+		TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+		string updateLabel = getNewLabel();
+		TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+		$$->code.pb(tac);
+		$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+
+		$$->code.pb(tac2);
+		$$->code.pb(tac3);
+		$$->code.pb(tac1);
+		if($10->code.size() > 0)
+			$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
+		$$->code.pb(tac_);
+		$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+		$$->code.pb(tac5);
+		$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+        ST->curEnv = ST->curEnv->prevEnv;
     }
     ;
 
 BasicForStatementNoShortIf
-    : BlockStart FOR '(' ForInit ';' Expression ';' ForUpdate ')' StatementNoShortIf   { 
-		   			$$ = $4;
-			string conditionLabel = getNewLabel();
-			TAC* tac = new TAC();
-			tac->op = "label";
-			tac->target = conditionLabel;
+    : BlockStart FOR '(' ';' ';' ')' StatementNoShortIf   { 
+		genNode* newNode = new genNode();
+		$$ = newNode;
 
-			string inLoopLabel = getNewLabel();			
-			string endLoopLabel = getNewLabel();
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string endLoopLabel = getNewLabel();
 			
-			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
 
-			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
-			if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
-				cerr << "Symbol " << $6->place << " not defined, at line: " <<line;
-				exit(1);
-			}
+		TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
-			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+		$$->code.pb(tac);
+		if($7->code.size() > 0)
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 
-			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+		$$->code.pb(tac2);
+		$$->code.pb(tac1);
 
-			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, conditionLabel);
 
-			string updateLabel = getNewLabel();
-			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ForInit ';' ';' ')' StatementNoShortIf   { 
+		$$ = $4;
 
-			$$->code.pb(tac);
-			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
 
-			$$->code.pb(tac2);
-			$$->code.pb(tac3);
-			$$->code.pb(tac1);
-			if($10->code.size() > 0)
-				$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
-			$$->code.pb(tac_);
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+		$$->code.pb(tac);
+		if($8->code.size() > 0)
 			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
-			$$->code.pb(tac5);
-			$$->code.pb(tac4);
 
-			updateBreak($$, endLoopLabel);
-			updateContinue($$, updateLabel);
+		$$->code.pb(tac2);
+		$$->code.pb(tac1);
 
-			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
-			ST->curEnv = ST->curEnv->prevEnv;
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, conditionLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ';' Expression ';' ')' StatementNoShortIf   { 
+		genNode* newNode = new genNode();
+		$$ = newNode;
+
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string inLoopLabel = getNewLabel();			
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+		if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+			cerr << "Symbol " << $5->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+
+		TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+		TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+		TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+		$$->code.pb(tac);
+
+		$$->code.pb(tac2);
+		$$->code.pb(tac3);
+		$$->code.pb(tac1);
+		if($8->code.size() > 0)
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+		$$->code.pb(tac5);
+		$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, conditionLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ';' ';' ForUpdate ')' StatementNoShortIf   { 
+		genNode* newNode = new genNode();
+		$$ = newNode;
+
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+		string updateLabel = getNewLabel();
+		TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+		$$->code.pb(tac);
+		if($8->code.size() > 0)
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+		$$->code.pb(tac_);
+		$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+		$$->code.pb(tac2);
+		$$->code.pb(tac1);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+        ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ForInit ';' Expression ';' ')' StatementNoShortIf   { 
+		$$ = $4;
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string inLoopLabel = getNewLabel();			
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+		if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
+			cerr << "Symbol " << $6->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+
+		TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+		TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+		TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+		$$->code.pb(tac);
+		$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+
+		$$->code.pb(tac2);
+		$$->code.pb(tac3);
+		$$->code.pb(tac1);
+		if($9->code.size() > 0)
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+		$$->code.pb(tac5);
+		$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, conditionLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ForInit ';' ';' ForUpdate ')' StatementNoShortIf {
+		$$ = $4;
+
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+		string updateLabel = getNewLabel();
+		TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+		$$->code.pb(tac);
+		if($9->code.size() > 0)
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+		$$->code.pb(tac_);
+		$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+		$$->code.pb(tac2);
+		$$->code.pb(tac1);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '('  ';' Expression ';' ForUpdate ')' StatementNoShortIf {
+		genNode* newNode = new genNode();
+		$$ = newNode;
+
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string inLoopLabel = getNewLabel();			
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+		if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+			cerr << "Symbol " << $5->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+
+		TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+		TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+		TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+		string updateLabel = getNewLabel();
+		TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+		$$->code.pb(tac);
+
+		$$->code.pb(tac2);
+		$$->code.pb(tac3);
+		$$->code.pb(tac1);
+		if($9->code.empty()){
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+		}
+		$$->code.pb(tac_);
+		$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+		$$->code.pb(tac5);
+		$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+
+		ST->curEnv = ST->curEnv->prevEnv;
+	}
+	| BlockStart FOR '(' ForInit ';' Expression ';' ForUpdate ')' StatementNoShortIf   { 
+		$$ = $4;
+		string conditionLabel = getNewLabel();
+		TAC* tac = new TAC();
+		tac->op = "label";
+		tac->target = conditionLabel;
+
+		string inLoopLabel = getNewLabel();			
+		string endLoopLabel = getNewLabel();
+			
+		TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+		TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+		if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
+			cerr << "Symbol " << $6->place << " not defined, at line: " <<line;
+			exit(1);
+		}
+
+		TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+		TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+		TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+		string updateLabel = getNewLabel();
+		TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+		$$->code.pb(tac);
+		$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+
+		$$->code.pb(tac2);
+		$$->code.pb(tac3);
+		$$->code.pb(tac1);
+		if($10->code.size() > 0)
+			$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
+		$$->code.pb(tac_);
+		$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+		$$->code.pb(tac5);
+		$$->code.pb(tac4);
+
+		updateBreak($$, endLoopLabel);
+		updateContinue($$, updateLabel);
+        ST->curEnv = ST->curEnv->prevEnv;
     }
     ;
 
@@ -1151,11 +1631,6 @@ Primary
 
 PrimaryNoNewArray
     : Literal                                                                      { $$=$1; }
-    // | ClassLiteral                                                                  { $$=$1; }
-    // | THIS                                                                          {$$=NULL;}
-    // | TypeName '.' THIS                                                             {
-	// 	$$ = $1;
-	// }                                                             
     | '(' Expression ')'                                                            { $$ = $2; }     
     | ClassInstanceCreationExpression                                               { $$=$1; } // TODO : CLASS INSTANCE CREATION
     | FieldAccess                                                                   { $$=$1; }
@@ -1258,24 +1733,11 @@ FloatLiteral
             $$->value = s1;
 	   }
 
-// ClassLiteral
-//     : TypeName Dims '.' CLASS                                                       {genNode *temp = createNode("KEYWORD",$4,{});genNode *temp1 = createNode("Separator",$3,{});
-//                                                                                       $$ = createNode("CLASS_LITERAL","",{$1,$2,temp,temp1});}
-//     | TypeName '.' CLASS                                                            {genNode *temp = createNode("KEYWORD",$3,{});genNode *temp1 = createNode("Separator",$2,{});
-//                                                                                      $$ = createNode("CLASS_LITERAL","",{$1,temp,temp1});}
-//     | PrimitiveType Dims '.' CLASS                                                  {genNode *temp = createNode("KEYWORD",$4,{});genNode *temp1 = createNode("Separator",$3,{});
-//                                                                                      $$ = createNode("CLASS_LITERAL","",{$1,$2,temp,temp1});}
-//     | PrimitiveType '.' CLASS                                                   {genNode *temp = createNode("KEYWORD",$3,{});genNode *temp1 = createNode("Separator",$2,{});
-//                                                                                      $$ = createNode("CLASS_LITERAL","",{$1,temp,temp1});}
-//     | VOID '.' CLASS                                                                {genNode *temp = createNode("KEYWORD",$3,{});genNode *temp2= createNode("Separator",$2,{});
-//                                                                                      genNode *temp1 = createNode("KEYWORD",$1,{});
-//                                                                                      $$ = createNode("CLASS_LITERAL","",{temp1,temp,temp2});}
-//     ;
 
 ClassInstanceCreationExpression
     : UnqualifiedClassInstanceCreationExpression                                         { $$=$1; }
-    | TypeName '.' UnqualifiedClassInstanceCreationExpression                          { $$ = $3; }
-    | Primary '.' UnqualifiedClassInstanceCreationExpression                             { $$ = $3; }
+    | TypeName '.' UnqualifiedClassInstanceCreationExpression                          { $$ = $1; }
+    | Primary '.' UnqualifiedClassInstanceCreationExpression                             { $$ = $1; }
     ;
 
 UnqualifiedClassInstanceCreationExpression
@@ -1295,7 +1757,7 @@ UnqualifiedClassInstanceCreationExpression
 
 FieldAccess // TODO : CHECK FIELD ACCESS
     : Primary '.' Identifier  {
-		$$ = $3;
+		$$ = $1;
 	}
     ;
 
@@ -1379,7 +1841,7 @@ ArrayAccess
     ;
 
 MethodInvocation
-    : Identifier '(' ArgumentList ')' {
+    : TypeName '(' ArgumentList ')' {
         TAC* tac = new TAC();
 		tac->op = "call";
 		tac->isInt1 = true;
@@ -1405,7 +1867,7 @@ MethodInvocation
 		$$->type = methodEnv->returnType;
 		$$->code.pb(tac);
     }
-    | Identifier '(' ')' {
+    | TypeName '(' ')' {
 		TAC* tac = new TAC();
 		tac->op = "call";
 		Env* methodEnv = ST->GetMethod($1->place);
@@ -1430,6 +1892,7 @@ MethodInvocation
 ArgumentList
     : ArgumentList ',' Expression                                                      {
        $$ = $1;
+	   $$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 	}
     | Expression                                                                       {$$ = $1; }
     ;
@@ -1805,13 +2268,10 @@ PostDecrementExpression
 
 CastExpression
    : '(' PrimitiveType ')' UnaryExpression                                              {
-
+         
    }
    ;
 
-
-// epsilon : %empty {}
-//         ;
 
 %%
 
@@ -1819,8 +2279,8 @@ int main (void) {
     yyparse();
 
     // generateDotFile();
-    cout<< "\n\n\n";
     ST->PrintTable(ST->baseEnv);
+	printTAC(root);
     
 
     return 1;

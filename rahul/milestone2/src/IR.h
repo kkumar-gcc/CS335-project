@@ -19,7 +19,7 @@ set<string> itype0= {"ret","exit"};
 
 struct TAC
 {
-		int lineNum;
+	int lineNum;
 
 	string op;
 	int opType;
@@ -58,6 +58,6 @@ vector < TAC* > IR;
 // SymTable symTable;
 SymTable* ST = new SymTable();
 
-void readFile(char* fileName);
-void fillTAC(vector <string> instr);
-bool isIntegerLiteral(string str);
+// void readFile(char* fileName);
+// void fillTAC(vector <string> instr);
+// bool isIntegerLiteral(string str);
