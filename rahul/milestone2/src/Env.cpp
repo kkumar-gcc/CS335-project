@@ -29,7 +29,7 @@ string Env::getMethodType()
 string Env::genTemp(string varType = "None", string genericType = "simple", int _width = 0, string varToken = "Identifier", int lineNum = 0)
 {
 
-	string place = "t_" + to_string(tempCounter);
+	string place = "tVar_" + to_string(tempCounter);
 	tempCounter += 1;
 
 	_width = getWidth(varType, genericType, _width);
@@ -52,7 +52,7 @@ int Env::getWidth(string varType, string genericType, int _width = -1)
 	typeMap["int"] = 4;
 	typeMap["long"] = 8;
 	typeMap["char"] = 1;
-	typeMap["bool"] = 1;
+	typeMap["boolean"] = 1;
 	typeMap["void"] = 0;
 	typeMap["null"] = 0;
 
@@ -144,7 +144,9 @@ Env *Env::getMethod(string methodName, Env *baseEnv)
 	fori(0, siz)
 	{
 		if ((tmpEnv->children)[i]->type == "METHODTYPE" && (tmpEnv->children)[i]->name == methodName)
+		{
 			return (tmpEnv->children)[i];
+		}
 	}
 
 	if (ParentClass != "None")
@@ -184,10 +186,11 @@ Env *Env::getMethodFromClass(string methodName, string className, Env *baseEnv)
 
 	return NULL;
 }
-int t=0;
+
 void Env::printTableEnv(Env *env)
 {
-	cout<<env->type<<" "<<env->name<<" "<<endl;
+	int t = 0;
+	cout << env->type << " " << env->name << " " << endl;
 
 	for (map<string, Symbol *>::iterator it = (env->addTable.begin()); it != (env->addTable.end()); it++)
 	{
@@ -201,13 +204,14 @@ void Env::printTableEnv(Env *env)
 	cout << "\n";
 
 	int siz = (env->children).size();
-	
+
 	fori(0, siz)
-	{   if(siz>=0){
-		t++;
-		cout<<"scope"<<t<<endl;
-		printTableEnv((env->children)[i]);
-	}
+	{
+		if (siz >= 0)
+		{
+			t++;
+			cout << "scope" << t << endl;
+			printTableEnv((env->children)[i]);
+		}
 	}
 }
-

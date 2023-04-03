@@ -6,7 +6,7 @@ class SymTable{
 public:
 	Env* baseEnv;
 	Env* curEnv;
-    map<string, Symbol*> symbols;
+    // map<string, Symbol*> symbols;
 	
 	SymTable();
 
@@ -14,8 +14,6 @@ public:
 	Symbol* AddVar(string varName, string varType, string genericType, int _width,string varToken ,int line);
 	string GetMethodType();
 	Symbol* GetVar(string varName);
-	// Symbol* GetVarEnv(string varName);
-	// Symbol* GetVarInClass(string varName, string className);
 	string GenTemp();
 	Env* BeginScope(string scopeName, string scopeType, string returnType, string Class, string Parent_Class);
 	string GetEnvName();

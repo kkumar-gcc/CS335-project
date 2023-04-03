@@ -2,7 +2,7 @@
 
 #include <bits/stdc++.h>
 #include "genTAC.cpp"
-
+#define YYDEFUG 1
 using namespace std;
 
 #define YYERROR_VERBOSE 1
@@ -62,7 +62,7 @@ long long int line=1;
 %type <node> PostIncrementExpression PostDecrementExpression CastExpression
 %type <node> MULTI_TypeDeclaration MULTI_ClassModifier MULTI_ClassBodyDeclaration SINGLE_ArgumentList 
 %type <node> ReferenceType ArrayType Dims ArrayInitialize VariableInitializerList ClassDeclaration
-%type <node> NormalClassDeclaration ClassModifier ClassBody ClassMemberDeclaration ClassBodyDeclaration FieldDeclaration VariableDeclaratorList
+%type <node> NormalClassDeclaration ClassModifier ClassBody ClassMemberDeclaration ClassBodyDeclaration FieldDeclaration VariableDeclaratorList ClassInit
 %type <node> VariableDeclarator VariableDeclaratorId VariableInitializer MethodDeclaration MethodHeader
 %type <node> MemberName FormalParameterList FormalParameter
 %type <node> ReceiverParameter MethodBody StaticInitializer ConstructorDeclaration ConstructorDeclarator ConstructorBody 
@@ -76,7 +76,6 @@ long long int line=1;
 %%
 Start : CompilationUnit { 
 	    $$ = $1;
-        // printTAC($$);
 		root = $$;
       }
       ;
@@ -101,7 +100,7 @@ TypeDeclaration :
       ;
 
 TypeName  
-        : Identifier{	
+        : Identifier {	
             $$=$1;
         }
         | TypeName '.' Identifier   { $$ = $1; }
@@ -117,13 +116,11 @@ Identifier
         else{
             sym->line.push_back(line); 
         }
-        genNode* n1 = new genNode();
-                    
+        genNode* n1 = new genNode();    
 		n1->place = sym->name;
-        n1->type= sym->type;
-        n1->value = $1;
-        n1->label="Identifier";
+
 		$$ = n1;
+		$$->type = sym->type;
     }
     ;
 Type
@@ -312,34 +309,33 @@ ClassDeclaration :
      ;
      
 NormalClassDeclaration 
-    : MULTI_ClassModifier CLASS BlockStart Identifier ClassBody  {
-		ST->curEnv->type = "CLASSTYPE";
-        $$ = $4;
+    : MULTI_ClassModifier CLASS BlockStart ClassInit Identifier ClassBody  {
+        $$ = $5;
+		$$->type = "class";
+		$$->code.pb(genLabelTAC($5->place));
+		$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+		ST->curEnv->name = $5->place;
+		ST->EndScope();
+    }
+    | CLASS BlockStart ClassInit Identifier ClassBody {
+       	$$ = $4;
 		$$->type = "class";
 		$$->code.pb(genLabelTAC($4->place));
 		$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
 		ST->curEnv->name = $4->place;
 		ST->EndScope();
-    }
-    | CLASS BlockStart Identifier ClassBody {
-	    ST->curEnv->type = "CLASSTYPE";
-       	$$ = $3;
-		$$->type = "class";
-		$$->code.pb(genLabelTAC($3->place));
-		$$->code.insert($$->code.end(), $4->code.begin(), $4->code.end());
-		ST->curEnv->name = $3->place;
-		ST->EndScope();
     }  
     ;
-
+ClassInit : {
+		ST->curEnv->type = "CLASSTYPE";
+		$$=NULL;
+	};
 
 ClassBody 
     : '{' MULTI_ClassBodyDeclaration '}'  {
-            ST->curEnv->type = "CLASSTYPE";
 			$$ = $2; 
     } 
     | '{' '}'   {
-        	ST->curEnv->type = "CLASSTYPE";
 			genNode* n = new genNode();
 			$$ = n; 
     }
@@ -868,7 +864,7 @@ IfThenElseStatement
 
 IfThenElseStatementNoShortIf
     : IF '(' Expression ')' StatementNoShortIf ELSE StatementNoShortIf    {
-       			$$ = $3;
+       		$$ = $3;
 			TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
 			TAC* tac3 = new TAC();	TAC* tac4 = new TAC();
 			TAC* tac5 = new TAC();	TAC* tac6 = new TAC();
@@ -1841,11 +1837,32 @@ ArrayAccess
     ;
 
 MethodInvocation
-    : TypeName '(' ArgumentList ')' {
+    :  TypeName '(' ')' {
+		TAC* tac = new TAC();
+		tac->op = "call";
+		Env* methodEnv = ST->GetMethod($1->place);
+		if(!methodEnv){
+			cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<line<<endl;
+			exit(1);
+		}
+		tac->target = methodEnv->name;
+		tac->isInt1 = true;
+		tac->l1 = convertNumToString(methodEnv->argNum);
+		string str1 = ST->GenTemp();
+		Symbol* sym = ST->GetVar(str1);
+		sym->type = methodEnv->returnType;
+		tac->dest = sym;
+		$$ = $1;
+		$$->place = str1;
+		$$->type = methodEnv->returnType;
+		$$->code.pb(tac);
+    }
+
+	| TypeName '(' ArgumentList ')' {
         TAC* tac = new TAC();
 		tac->op = "call";
 		tac->isInt1 = true;
-
+        cout<<$1->place <<"hello" <<endl;
 		Env* methodEnv = ST->GetMethod($1->place);
 		if(!methodEnv){
 			cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<line<<endl;
@@ -1863,26 +1880,6 @@ MethodInvocation
 		tac->dest = sym;
 		$$ = $1;
 		if($3->code.size() > 0)	$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-		$$->place = str1;
-		$$->type = methodEnv->returnType;
-		$$->code.pb(tac);
-    }
-    | TypeName '(' ')' {
-		TAC* tac = new TAC();
-		tac->op = "call";
-		Env* methodEnv = ST->GetMethod($1->place);
-		if(!methodEnv){
-			cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<line<<endl;
-			exit(1);
-		}
-		tac->target = methodEnv->name;
-		tac->isInt1 = true;
-		tac->l1 = convertNumToString(methodEnv->argNum);
-		string str1 = ST->GenTemp();
-		Symbol* sym = ST->GetVar(str1);
-		sym->type = methodEnv->returnType;
-		tac->dest = sym;
-		$$ = $1;
 		$$->place = str1;
 		$$->type = methodEnv->returnType;
 		$$->code.pb(tac);
@@ -1932,21 +1929,21 @@ Assignment
 			
 			Symbol* sym1 = ST->GetVar($1->place);
 			if(sym1->type == "None"){
-				cerr << "Error: Symbol " <<  $1->place << " not defined, at line num: " << endl;
+				cerr << "Error: Symbol " <<  $1->place << " not defined, at line num: "<<line << endl;
 				exit(1);
 			}
 			if($3->isLit==false){		
 				Symbol* sym2 = ST->GetVar($3->place);
 				if(sym2->type == "None"){
-					cerr << "Error: Symbol "<< $3->place << " not defined, at line num: " << endl;
+					cerr << "Error: Symbol "<< $3->place << " not defined, at line num: "<<line << endl;
 					exit(1);
 				}
 				if(sym1->baseType != sym2->baseType){
-					cerr << "Error: Incompatible types at line num: " << endl;
+					cerr << "Error: Incompatible types at line num: "<<line << endl;
 					exit(1);
 				}
 				if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
-					cerr << "Error: Incompatible types at line num: " << endl;
+					cerr << "Error: Incompatible types at line num: "<<line << endl;
 					exit(1);
 				}
 			}
@@ -1974,21 +1971,21 @@ Assignment
 			
 			Symbol* sym1 = ST->GetVar($1->place);
 			if(sym1->type == "None"){
-				cerr << "Error: Symbol " <<  $1->place << " not defined, at line num: " << endl;
+				cerr << "Error: Symbol " <<  $1->place << " not defined, at line num: "<<line << endl;
 				exit(1);
 			}
 			if($3->isLit==false){		
 				Symbol* sym2 = ST->GetVar($3->place);
 				if(sym2->type == "None"){
-					cerr << "Error: Symbol "<< $3->place << " not defined, at line num: " << endl;
+					cerr << "Error: Symbol "<< $3->place << " not defined, at line num: "<<line << endl;
 					exit(1);
 				}
 				if(sym1->baseType != sym2->baseType){
-					cerr << "Error: Incompatible types at line num: " << endl;
+					cerr << "Error: Incompatible types at line num: "<<line << endl;
 					exit(1);
 				}
 				if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
-					cerr << "Error: Incompatible types at line num: " << endl;
+					cerr << "Error: Incompatible types at line num: "<<line << endl;
 					exit(1);
 				}
 			}
