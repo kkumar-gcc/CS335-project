@@ -1,0 +1,44 @@
+BLOCKTYPE None 
+
+scope1
+CLASSTYPE test_1 
+main None 12 Identifier 
+sumArray None 3 Identifier 
+test_1 None 1 Identifier 
+
+scope1
+sumArray sumArray 
+arr int 3 7 Identifier 
+n int 3 6 Identifier 
+
+scope1
+BLOCKTYPE None 
+sum int 4 7 7 Identifier 
+
+scope1
+BLOCKTYPE None 
+i int 6 6 6 7 Identifier 
+label_0 label 0 Identifier 
+label_1 label 0 Identifier 
+label_2 label 0 Identifier 
+label_3 label 0 Identifier 
+tVar_0 boolean 0 Identifier 
+
+scope1
+BLOCKTYPE None 
+tVar_1 int 0 Identifier 
+tVar_2 int 0 Identifier 
+
+scope2
+main main 
+String None 12 Identifier 
+args String 12 Identifier 
+
+scope1
+BLOCKTYPE None 
+arr int 14 Identifier 
+sum int 13 16 Identifier 
+tVar_3 None 0 Identifier 
+tVar_4 None 0 Identifier 
+tVar_5 None 0 Identifier 
+
