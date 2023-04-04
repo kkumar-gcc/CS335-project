@@ -11,12 +11,12 @@ public class test_5 {
     public static float main(String[] args) {
         int[] numbers = {1, 2, 3, 4, 5};
         int  c = numbers[0];
-
+        x=10;
         numbers[2]=7;
         for (int i = 0; i < 3; i++) {
             numbers[i]+=1;
         }
-        return c+numbers[1];
+        return c + numbers[1];
     }
 
     

@@ -1,0 +1,35 @@
+label test_1
+label fn
+readParam c
+readParam y
+readParam x
+tVar_0 = x + y
+c = tVar_0
+retint cretint 
+label pp
+readParam c
+x = c
+retint xretint 
+label Main
+readParam args
+tVar_1 = 10
+tVar_2 = 2
+tVar_3 = 3
+tVar_4 = 4
+tVar_5 = 5
+c = 10
+tVar_6 = c[1]
+tVar_6 = 409
+c[1] = tVar_6
+tVar_7 = c[1]
+tVar_8 = tVar_7 > 20
+if tVar_8 goto label_0
+goto label_1
+label label_0
+m = 3
+label label_1
+tVar_9 = c[0]
+call, tVar_10 pp, 0
+k = 10
+call, tVar_11 fn, 0
+t = tVar_11

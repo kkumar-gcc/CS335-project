@@ -159,7 +159,7 @@ void printTAC(genNode *node)
 			if (t->op == "++" || t->op == "--" || t->op == "printint" || t->op == "scan")
 			{
 				// cout<< t->op << ", " << t->dest->name;
-				output << t->dest->name << "helo " << t->op;
+				output << t->dest->name << " " << t->op;
 				break;
 			}
 			else if (t->op == "retint")

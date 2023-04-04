@@ -516,7 +516,7 @@ MethodDeclaration
 		tmp.pb(genLabelTAC(ST->curEnv->name));
 		$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
 		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());	
-        ST->curEnv->type = $2->place;	
+       	
 		ST->EndScope();
     }     
     | MethodHeader MethodBody                       {
@@ -525,7 +525,7 @@ MethodDeclaration
 		tmp.pb(genLabelTAC(ST->curEnv->name));
 		$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
 		$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());	
-         ST->curEnv->type = $1->place;	
+        	
 		ST->EndScope();
     }     
     ;
@@ -535,7 +535,6 @@ MethodHeader
         $$ = $2;
 		ST->curEnv->returnType = $1->place;
 		ST->curEnv->name = $2->place;
-        ST->curEnv->type = $1->place;
         $$->code = $4->code;
     }
     | Type MemberName '(' ')'        { 
@@ -576,9 +575,10 @@ MethodHeader
 
 MemberName
     : Identifier {
-         ST->BeginScope();
-         ST->curEnv->type = "METHODTYPE";
-         $$ = $1;
+        ST->BeginScope();
+		ST->curEnv->type = "METHODTYPE";
+
+		$$ = $1; 
     }
     ;
 
@@ -645,38 +645,38 @@ StaticInitializer
 
 ConstructorDeclaration
     : MULTI_ClassModifier ConstructorDeclarator ConstructorBody     { 
-        $$ = $2;
-		vector <TAC*> tmp;
-		tmp.pb(genLabelTAC(ST->curEnv->name));
-		$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
-		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());	
-        ST->curEnv->type = $2->place;	
-		ST->EndScope(); 
+        // $$ = $2;
+		// vector <TAC*> tmp;
+		// tmp.pb(genLabelTAC(ST->curEnv->name));
+		// $$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+		// $$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());	
+        // ST->curEnv->type = $2->place;	
+		// ST->EndScope(); 
     }
     | ConstructorDeclarator ConstructorBody  { 
-        $$ = $1;
-		vector <TAC*> tmp;
-		tmp.pb(genLabelTAC(ST->curEnv->name));
-		$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
-		$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());	
-        ST->curEnv->type = $1->place;	
-		ST->EndScope();
+        // $$ = $1;
+		// vector <TAC*> tmp;
+		// tmp.pb(genLabelTAC(ST->curEnv->name));
+		// $$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+		// $$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());	
+        // ST->curEnv->type = $1->place;	
+		// ST->EndScope();
     }
     ;
 
 ConstructorDeclarator
     : Identifier '(' FormalParameterList ')' { 
-        ST->BeginScope();
-        ST->curEnv->type = "CONTRUCTORTYPE";
-        $$ = $1;
-		ST->curEnv->name = $1->place;
-        $$->code = $3->code;
+        // ST->BeginScope();
+        // ST->curEnv->type = "CONTRUCTORTYPE";
+        // $$ = $1;
+		// ST->curEnv->name = $1->place;
+        // $$->code = $3->code;
     }
     | Identifier '(' ')'   { 
-        ST->BeginScope();
-        ST->curEnv->type = "CONTRUCTORTYPE";
-        $$ = $1;
-		ST->curEnv->name = $1->place;
+        // ST->BeginScope();
+        // ST->curEnv->type = "CONTRUCTORTYPE";
+        // $$ = $1;
+		// ST->curEnv->name = $1->place;
     }
     ;
 
@@ -707,8 +707,8 @@ Block
 
 BlockStart 
     : {
-		$$ = NULL;
-		ST->BeginScope();
+		$$ = NULL; 
+		ST->BeginScope();	
 	}
 	;
 

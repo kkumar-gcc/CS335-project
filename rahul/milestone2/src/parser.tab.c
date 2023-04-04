@@ -723,8 +723,8 @@ static const yytype_int16 yyrline[] =
      312,   320,   329,   335,   338,   344,   345,   351,   352,   353,
      357,   358,   359,   360,   368,   372,   378,   379,   383,   391,
      399,   407,   415,   426,   441,   449,   495,   498,   501,   507,
-     508,   513,   522,   534,   541,   546,   552,   557,   562,   566,
-     571,   578,   586,   587,   591,   595,   610,   628,   631,   637,
+     508,   513,   522,   534,   540,   545,   551,   556,   561,   565,
+     570,   577,   586,   587,   591,   595,   610,   628,   631,   637,
      638,   641,   647,   656,   668,   675,   684,   685,   686,   687,
      691,   695,   696,   700,   703,   709,   716,   717,   724,   725,
      726,   730,   736,   753,   754,   755,   756,   757,   758,   762,
@@ -3043,7 +3043,7 @@ yyreduce:
 		tmp.pb(genLabelTAC(ST->curEnv->name));
 		(yyval.node)->code.insert((yyval.node)->code.begin(), tmp.begin(), tmp.end());
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());	
-        ST->curEnv->type = (yyvsp[-1].node)->place;	
+       	
 		ST->EndScope();
     }
 #line 3050 "parser.tab.c"
@@ -3057,7 +3057,7 @@ yyreduce:
 		tmp.pb(genLabelTAC(ST->curEnv->name));
 		(yyval.node)->code.insert((yyval.node)->code.begin(), tmp.begin(), tmp.end());
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());	
-         ST->curEnv->type = (yyvsp[-1].node)->place;	
+        	
 		ST->EndScope();
     }
 #line 3064 "parser.tab.c"
@@ -3069,87 +3069,87 @@ yyreduce:
         (yyval.node) = (yyvsp[-3].node);
 		ST->curEnv->returnType = (yyvsp[-4].node)->place;
 		ST->curEnv->name = (yyvsp[-3].node)->place;
-        ST->curEnv->type = (yyvsp[-4].node)->place;
         (yyval.node)->code = (yyvsp[-1].node)->code;
     }
-#line 3076 "parser.tab.c"
+#line 3075 "parser.tab.c"
     break;
 
   case 74: /* MethodHeader: Type MemberName '(' ')'  */
-#line 541 "parser.y"
+#line 540 "parser.y"
                                      { 
         (yyval.node) = (yyvsp[-2].node);
 		ST->curEnv->returnType = (yyvsp[-3].node)->place;
 		ST->curEnv->name = (yyvsp[-2].node)->place;
     }
-#line 3086 "parser.tab.c"
+#line 3085 "parser.tab.c"
     break;
 
   case 75: /* MethodHeader: Type MemberName '(' FormalParameterList ')' Dims  */
-#line 546 "parser.y"
+#line 545 "parser.y"
                                                               { 
         (yyval.node) = (yyvsp[-4].node);
 		ST->curEnv->returnType = (yyvsp[-5].node)->place;
 		ST->curEnv->name = (yyvsp[-4].node)->place;
 		(yyval.node)->code = (yyvsp[-2].node)->code;
     }
-#line 3097 "parser.tab.c"
+#line 3096 "parser.tab.c"
     break;
 
   case 76: /* MethodHeader: Type MemberName '(' ')' Dims  */
-#line 552 "parser.y"
+#line 551 "parser.y"
                                            { 
         (yyval.node) = (yyvsp[-3].node);
 		ST->curEnv->returnType = (yyvsp[-4].node)->place;
 		ST->curEnv->name = (yyvsp[-3].node)->place;
     }
-#line 3107 "parser.tab.c"
+#line 3106 "parser.tab.c"
     break;
 
   case 77: /* MethodHeader: VOID MemberName '(' FormalParameterList ')'  */
-#line 557 "parser.y"
+#line 556 "parser.y"
                                                            { 
         (yyval.node) = (yyvsp[-3].node);
 		ST->curEnv->name = (yyvsp[-3].node)->place;
 		(yyval.node)->code = (yyvsp[-1].node)->code;
     }
-#line 3117 "parser.tab.c"
+#line 3116 "parser.tab.c"
     break;
 
   case 78: /* MethodHeader: VOID MemberName '(' ')'  */
-#line 562 "parser.y"
+#line 561 "parser.y"
                                       { 
         (yyval.node) = (yyvsp[-2].node);
 		ST->curEnv->name = (yyvsp[-2].node)->place;
     }
-#line 3126 "parser.tab.c"
+#line 3125 "parser.tab.c"
     break;
 
   case 79: /* MethodHeader: VOID MemberName '(' FormalParameterList ')' Dims  */
-#line 566 "parser.y"
+#line 565 "parser.y"
                                                               { 
         (yyval.node) = (yyvsp[-4].node);
 		ST->curEnv->name = (yyvsp[-4].node)->place;
 		(yyval.node)->code = (yyvsp[-2].node)->code;
     }
-#line 3136 "parser.tab.c"
+#line 3135 "parser.tab.c"
     break;
 
   case 80: /* MethodHeader: VOID MemberName '(' ')' Dims  */
-#line 571 "parser.y"
+#line 570 "parser.y"
                                            { 
         (yyval.node) = (yyvsp[-3].node);
 		ST->curEnv->name = (yyvsp[-3].node)->place;
     }
-#line 3145 "parser.tab.c"
+#line 3144 "parser.tab.c"
     break;
 
   case 81: /* MemberName: Identifier  */
-#line 578 "parser.y"
+#line 577 "parser.y"
                  {
-         ST->BeginScope();
-         ST->curEnv->type = "METHODTYPE";
-         (yyval.node) = (yyvsp[0].node);
+        ST->BeginScope();
+		ST->curEnv->type = "METHODTYPE";
+
+		(yyval.node) = (yyvsp[0].node); 
     }
 #line 3155 "parser.tab.c"
     break;
@@ -3253,13 +3253,13 @@ yyreduce:
   case 92: /* ConstructorDeclaration: MULTI_ClassModifier ConstructorDeclarator ConstructorBody  */
 #line 647 "parser.y"
                                                                     { 
-        (yyval.node) = (yyvsp[-1].node);
-		vector <TAC*> tmp;
-		tmp.pb(genLabelTAC(ST->curEnv->name));
-		(yyval.node)->code.insert((yyval.node)->code.begin(), tmp.begin(), tmp.end());
-		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());	
-        ST->curEnv->type = (yyvsp[-1].node)->place;	
-		ST->EndScope(); 
+        // $$ = $2;
+		// vector <TAC*> tmp;
+		// tmp.pb(genLabelTAC(ST->curEnv->name));
+		// $$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+		// $$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());	
+        // ST->curEnv->type = $2->place;	
+		// ST->EndScope(); 
     }
 #line 3265 "parser.tab.c"
     break;
@@ -3267,13 +3267,13 @@ yyreduce:
   case 93: /* ConstructorDeclaration: ConstructorDeclarator ConstructorBody  */
 #line 656 "parser.y"
                                              { 
-        (yyval.node) = (yyvsp[-1].node);
-		vector <TAC*> tmp;
-		tmp.pb(genLabelTAC(ST->curEnv->name));
-		(yyval.node)->code.insert((yyval.node)->code.begin(), tmp.begin(), tmp.end());
-		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());	
-        ST->curEnv->type = (yyvsp[-1].node)->place;	
-		ST->EndScope();
+        // $$ = $1;
+		// vector <TAC*> tmp;
+		// tmp.pb(genLabelTAC(ST->curEnv->name));
+		// $$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+		// $$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());	
+        // ST->curEnv->type = $1->place;	
+		// ST->EndScope();
     }
 #line 3279 "parser.tab.c"
     break;
@@ -3281,11 +3281,11 @@ yyreduce:
   case 94: /* ConstructorDeclarator: Identifier '(' FormalParameterList ')'  */
 #line 668 "parser.y"
                                              { 
-        ST->BeginScope();
-        ST->curEnv->type = "CONTRUCTORTYPE";
-        (yyval.node) = (yyvsp[-3].node);
-		ST->curEnv->name = (yyvsp[-3].node)->place;
-        (yyval.node)->code = (yyvsp[-1].node)->code;
+        // ST->BeginScope();
+        // ST->curEnv->type = "CONTRUCTORTYPE";
+        // $$ = $1;
+		// ST->curEnv->name = $1->place;
+        // $$->code = $3->code;
     }
 #line 3291 "parser.tab.c"
     break;
@@ -3293,10 +3293,10 @@ yyreduce:
   case 95: /* ConstructorDeclarator: Identifier '(' ')'  */
 #line 675 "parser.y"
                            { 
-        ST->BeginScope();
-        ST->curEnv->type = "CONTRUCTORTYPE";
-        (yyval.node) = (yyvsp[-2].node);
-		ST->curEnv->name = (yyvsp[-2].node)->place;
+        // ST->BeginScope();
+        // ST->curEnv->type = "CONTRUCTORTYPE";
+        // $$ = $1;
+		// ST->curEnv->name = $1->place;
     }
 #line 3302 "parser.tab.c"
     break;
@@ -3362,8 +3362,8 @@ yyreduce:
   case 105: /* BlockStart: %empty  */
 #line 709 "parser.y"
       {
-		(yyval.node) = NULL;
-		ST->BeginScope();
+		(yyval.node) = NULL; 
+		ST->BeginScope();	
 	}
 #line 3369 "parser.tab.c"
     break;
