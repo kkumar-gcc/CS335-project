@@ -1888,10 +1888,27 @@ MethodInvocation
 
 ArgumentList
     : ArgumentList ',' Expression                                                      {
-       $$ = $1;
-	   $$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+       if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+			exit(1);
+			}
+			$$ = $1;
+			TAC* tac = new TAC();
+			tac->op = "param";
+			tac->target = $3->place;
+			$$->code.pb(tac);
 	}
-    | Expression                                                                       {$$ = $1; }
+    | Expression         {
+		if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			$$ = $1; 
+			TAC* tac = new TAC();
+			tac->op = "param";
+			tac->target = $1->place;
+			$$->code.pb(tac);
+	}                                               
     ;
 
 ArrayCreationExpression

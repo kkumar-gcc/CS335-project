@@ -736,14 +736,14 @@ static const yytype_int16 yyrline[] =
     1587,  1596,  1614,  1624,  1625,  1629,  1630,  1631,  1632,  1633,
     1634,  1638,  1639,  1640,  1641,  1642,  1643,  1647,  1657,  1670,
     1682,  1695,  1708,  1721,  1734,  1735,  1736,  1740,  1741,  1746,
-    1749,  1755,  1761,  1797,  1840,  1861,  1890,  1894,  1898,  1905,
-    1915,  1919,  1920,  1924,  1966,  2011,  2012,  2016,  2017,  2018,
-    2019,  2020,  2021,  2022,  2023,  2024,  2025,  2026,  2027,  2031,
-    2032,  2040,  2041,  2051,  2052,  2062,  2063,  2073,  2074,  2084,
-    2085,  2095,  2096,  2103,  2113,  2114,  2121,  2128,  2135,  2145,
-    2146,  2153,  2163,  2164,  2171,  2181,  2182,  2189,  2196,  2206,
-    2207,  2208,  2211,  2218,  2222,  2229,  2236,  2237,  2239,  2242,
-    2246,  2247,  2248,  2249,  2253,  2260,  2267
+    1749,  1755,  1761,  1797,  1840,  1861,  1890,  1901,  1915,  1922,
+    1932,  1936,  1937,  1941,  1983,  2028,  2029,  2033,  2034,  2035,
+    2036,  2037,  2038,  2039,  2040,  2041,  2042,  2043,  2044,  2048,
+    2049,  2057,  2058,  2068,  2069,  2079,  2080,  2090,  2091,  2101,
+    2102,  2112,  2113,  2120,  2130,  2131,  2138,  2145,  2152,  2162,
+    2163,  2170,  2180,  2181,  2188,  2198,  2199,  2206,  2213,  2223,
+    2224,  2225,  2228,  2235,  2239,  2246,  2253,  2254,  2256,  2259,
+    2263,  2264,  2265,  2266,  2270,  2277,  2284
 };
 #endif
 
@@ -4919,20 +4919,37 @@ yyreduce:
   case 206: /* ArgumentList: ArgumentList ',' Expression  */
 #line 1890 "parser.y"
                                                                                        {
-       (yyval.node) = (yyvsp[-2].node);
-	   (yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
+       if(!((yyvsp[0].node)->isLit) && ST->GetVar((yyvsp[0].node)->place)->type == "None"){
+				cerr << "Symbol " << (yyvsp[0].node)->place << " not defined, at line: " <<line;
+			exit(1);
+			}
+			(yyval.node) = (yyvsp[-2].node);
+			TAC* tac = new TAC();
+			tac->op = "param";
+			tac->target = (yyvsp[0].node)->place;
+			(yyval.node)->code.pb(tac);
 	}
-#line 4926 "parser.tab.c"
+#line 4933 "parser.tab.c"
     break;
 
   case 207: /* ArgumentList: Expression  */
-#line 1894 "parser.y"
-                                                                                       {(yyval.node) = (yyvsp[0].node); }
-#line 4932 "parser.tab.c"
+#line 1901 "parser.y"
+                         {
+		if(!((yyvsp[0].node)->isLit) && ST->GetVar((yyvsp[0].node)->place)->type == "None"){
+				cerr << "Symbol " << (yyvsp[0].node)->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			(yyval.node) = (yyvsp[0].node); 
+			TAC* tac = new TAC();
+			tac->op = "param";
+			tac->target = (yyvsp[0].node)->place;
+			(yyval.node)->code.pb(tac);
+	}
+#line 4949 "parser.tab.c"
     break;
 
   case 208: /* ArrayCreationExpression: NEW PrimitiveType '[' Expression ']'  */
-#line 1898 "parser.y"
+#line 1915 "parser.y"
                                            {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -4940,11 +4957,11 @@ yyreduce:
 		(yyval.node)->type = (yyvsp[-3].node)->type;
 		(yyval.node)->nodeLen = stoi((yyvsp[-1].node)->place);
    }
-#line 4944 "parser.tab.c"
+#line 4961 "parser.tab.c"
     break;
 
   case 209: /* ArrayCreationExpression: NEW TypeName '[' Expression ']'  */
-#line 1905 "parser.y"
+#line 1922 "parser.y"
                                      {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -4952,29 +4969,29 @@ yyreduce:
 		(yyval.node)->type = (yyvsp[-3].node)->type;
 		(yyval.node)->nodeLen = stoi((yyvsp[-1].node)->place);
    }
-#line 4956 "parser.tab.c"
+#line 4973 "parser.tab.c"
     break;
 
   case 210: /* Expression: AssignmentExpression  */
-#line 1915 "parser.y"
+#line 1932 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 4962 "parser.tab.c"
+#line 4979 "parser.tab.c"
     break;
 
   case 211: /* AssignmentExpression: ConditionalExpression  */
-#line 1919 "parser.y"
+#line 1936 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 4968 "parser.tab.c"
+#line 4985 "parser.tab.c"
     break;
 
   case 212: /* AssignmentExpression: Assignment  */
-#line 1920 "parser.y"
+#line 1937 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 4974 "parser.tab.c"
+#line 4991 "parser.tab.c"
     break;
 
   case 213: /* Assignment: LeftHandSide AssignmentOperator Expression  */
-#line 1924 "parser.y"
+#line 1941 "parser.y"
                                                  { 
  			// assignment_operator is a string
 			(yyval.node) = (yyvsp[-2].node);	
@@ -5017,11 +5034,11 @@ yyreduce:
 				(yyval.node)->code.pb(tac);
 			}			
    }
-#line 5021 "parser.tab.c"
+#line 5038 "parser.tab.c"
     break;
 
   case 214: /* Assignment: TypeName AssignmentOperator Expression  */
-#line 1966 "parser.y"
+#line 1983 "parser.y"
                                                             { 
     				// assignment_operator is a string
 			(yyval.node) = (yyvsp[-2].node);	
@@ -5064,117 +5081,117 @@ yyreduce:
 				(yyval.node)->code.pb(tac);
 			}			
    }
-#line 5068 "parser.tab.c"
+#line 5085 "parser.tab.c"
     break;
 
   case 215: /* LeftHandSide: FieldAccess  */
-#line 2011 "parser.y"
+#line 2028 "parser.y"
                                                                                         { (yyval.node)=(yyvsp[0].node); }
-#line 5074 "parser.tab.c"
+#line 5091 "parser.tab.c"
     break;
 
   case 216: /* LeftHandSide: ArrayAccess  */
-#line 2012 "parser.y"
+#line 2029 "parser.y"
                                                                                         { (yyval.node)=(yyvsp[0].node); }
-#line 5080 "parser.tab.c"
+#line 5097 "parser.tab.c"
     break;
 
   case 217: /* AssignmentOperator: '='  */
-#line 2016 "parser.y"
+#line 2033 "parser.y"
                                                                                         { (yyval.str) = (yyvsp[0].str);}
-#line 5086 "parser.tab.c"
+#line 5103 "parser.tab.c"
     break;
 
   case 218: /* AssignmentOperator: MUL_ASSIGN  */
-#line 2017 "parser.y"
+#line 2034 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5092 "parser.tab.c"
+#line 5109 "parser.tab.c"
     break;
 
   case 219: /* AssignmentOperator: DIV_ASSIGN  */
-#line 2018 "parser.y"
+#line 2035 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5098 "parser.tab.c"
+#line 5115 "parser.tab.c"
     break;
 
   case 220: /* AssignmentOperator: MOD_ASSIGN  */
-#line 2019 "parser.y"
+#line 2036 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5104 "parser.tab.c"
+#line 5121 "parser.tab.c"
     break;
 
   case 221: /* AssignmentOperator: ADD_ASSIGN  */
-#line 2020 "parser.y"
+#line 2037 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5110 "parser.tab.c"
+#line 5127 "parser.tab.c"
     break;
 
   case 222: /* AssignmentOperator: SUB_ASSIGN  */
-#line 2021 "parser.y"
+#line 2038 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5116 "parser.tab.c"
+#line 5133 "parser.tab.c"
     break;
 
   case 223: /* AssignmentOperator: LEFT_ASSIGN  */
-#line 2022 "parser.y"
+#line 2039 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5122 "parser.tab.c"
+#line 5139 "parser.tab.c"
     break;
 
   case 224: /* AssignmentOperator: RIGHT_ASSIGN  */
-#line 2023 "parser.y"
+#line 2040 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5128 "parser.tab.c"
+#line 5145 "parser.tab.c"
     break;
 
   case 225: /* AssignmentOperator: UNSIGNED_RIGHT_ASSIGN  */
-#line 2024 "parser.y"
+#line 2041 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5134 "parser.tab.c"
+#line 5151 "parser.tab.c"
     break;
 
   case 226: /* AssignmentOperator: AND_ASSIGN  */
-#line 2025 "parser.y"
+#line 2042 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5140 "parser.tab.c"
+#line 5157 "parser.tab.c"
     break;
 
   case 227: /* AssignmentOperator: XOR_ASSIGN  */
-#line 2026 "parser.y"
+#line 2043 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5146 "parser.tab.c"
+#line 5163 "parser.tab.c"
     break;
 
   case 228: /* AssignmentOperator: OR_ASSIGN  */
-#line 2027 "parser.y"
+#line 2044 "parser.y"
                                                                                         {(yyval.str) = (yyvsp[0].str);}
-#line 5152 "parser.tab.c"
+#line 5169 "parser.tab.c"
     break;
 
   case 229: /* ConditionalExpression: ConditionalOrExpression  */
-#line 2031 "parser.y"
+#line 2048 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5158 "parser.tab.c"
+#line 5175 "parser.tab.c"
     break;
 
   case 230: /* ConditionalExpression: ConditionalOrExpression '?' Expression ':' ConditionalExpression  */
-#line 2032 "parser.y"
+#line 2049 "parser.y"
                                                                                         {
     	genNode* newNode = new genNode();
 		(yyval.node) = newNode;
 		getCECode((yyval.node), (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5168 "parser.tab.c"
+#line 5185 "parser.tab.c"
     break;
 
   case 231: /* ConditionalOrExpression: ConditionalAndExpression  */
-#line 2040 "parser.y"
+#line 2057 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5174 "parser.tab.c"
+#line 5191 "parser.tab.c"
     break;
 
   case 232: /* ConditionalOrExpression: ConditionalOrExpression OR_OP ConditionalAndExpression  */
-#line 2041 "parser.y"
+#line 2058 "parser.y"
                                                                                         {
     	genNode* n= new genNode();
 		(yyval.node) = n;
@@ -5182,17 +5199,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "||", (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5186 "parser.tab.c"
+#line 5203 "parser.tab.c"
     break;
 
   case 233: /* ConditionalAndExpression: InclusiveOrExpression  */
-#line 2051 "parser.y"
+#line 2068 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5192 "parser.tab.c"
+#line 5209 "parser.tab.c"
     break;
 
   case 234: /* ConditionalAndExpression: ConditionalAndExpression AND_OP InclusiveOrExpression  */
-#line 2052 "parser.y"
+#line 2069 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5200,17 +5217,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "&&", (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5204 "parser.tab.c"
+#line 5221 "parser.tab.c"
     break;
 
   case 235: /* InclusiveOrExpression: ExclusiveOrExpression  */
-#line 2062 "parser.y"
+#line 2079 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5210 "parser.tab.c"
+#line 5227 "parser.tab.c"
     break;
 
   case 236: /* InclusiveOrExpression: InclusiveOrExpression '|' ExclusiveOrExpression  */
-#line 2063 "parser.y"
+#line 2080 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5218,17 +5235,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "|", (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5222 "parser.tab.c"
+#line 5239 "parser.tab.c"
     break;
 
   case 237: /* ExclusiveOrExpression: AndExpression  */
-#line 2073 "parser.y"
+#line 2090 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5228 "parser.tab.c"
+#line 5245 "parser.tab.c"
     break;
 
   case 238: /* ExclusiveOrExpression: ExclusiveOrExpression '^' AndExpression  */
-#line 2074 "parser.y"
+#line 2091 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5236,17 +5253,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "^", (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5240 "parser.tab.c"
+#line 5257 "parser.tab.c"
     break;
 
   case 239: /* AndExpression: EqualityExpression  */
-#line 2084 "parser.y"
+#line 2101 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5246 "parser.tab.c"
+#line 5263 "parser.tab.c"
     break;
 
   case 240: /* AndExpression: AndExpression '&' EqualityExpression  */
-#line 2085 "parser.y"
+#line 2102 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5254,17 +5271,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "&", (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5258 "parser.tab.c"
+#line 5275 "parser.tab.c"
     break;
 
   case 241: /* EqualityExpression: RelationalExpression  */
-#line 2095 "parser.y"
+#line 2112 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5264 "parser.tab.c"
+#line 5281 "parser.tab.c"
     break;
 
   case 242: /* EqualityExpression: EqualityExpression EQ_OP RelationalExpression  */
-#line 2096 "parser.y"
+#line 2113 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5272,11 +5289,11 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "==", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5276 "parser.tab.c"
+#line 5293 "parser.tab.c"
     break;
 
   case 243: /* EqualityExpression: EqualityExpression NE_OP RelationalExpression  */
-#line 2103 "parser.y"
+#line 2120 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5284,17 +5301,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "!=", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5288 "parser.tab.c"
+#line 5305 "parser.tab.c"
     break;
 
   case 244: /* RelationalExpression: ShiftExpression  */
-#line 2113 "parser.y"
+#line 2130 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5294 "parser.tab.c"
+#line 5311 "parser.tab.c"
     break;
 
   case 245: /* RelationalExpression: RelationalExpression '<' ShiftExpression  */
-#line 2114 "parser.y"
+#line 2131 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5302,11 +5319,11 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "<", (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5306 "parser.tab.c"
+#line 5323 "parser.tab.c"
     break;
 
   case 246: /* RelationalExpression: RelationalExpression '>' ShiftExpression  */
-#line 2121 "parser.y"
+#line 2138 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5314,11 +5331,11 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), ">", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5318 "parser.tab.c"
+#line 5335 "parser.tab.c"
     break;
 
   case 247: /* RelationalExpression: RelationalExpression LE_OP ShiftExpression  */
-#line 2128 "parser.y"
+#line 2145 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5326,11 +5343,11 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "<=", (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5330 "parser.tab.c"
+#line 5347 "parser.tab.c"
     break;
 
   case 248: /* RelationalExpression: RelationalExpression GE_OP ShiftExpression  */
-#line 2135 "parser.y"
+#line 2152 "parser.y"
                                                                                         {
      	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5338,17 +5355,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), ">=", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5342 "parser.tab.c"
+#line 5359 "parser.tab.c"
     break;
 
   case 249: /* ShiftExpression: AdditiveExpression  */
-#line 2145 "parser.y"
+#line 2162 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5348 "parser.tab.c"
+#line 5365 "parser.tab.c"
     break;
 
   case 250: /* ShiftExpression: ShiftExpression LEFT_OP AdditiveExpression  */
-#line 2146 "parser.y"
+#line 2163 "parser.y"
                                                                                         {
         genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5356,11 +5373,11 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "<<", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5360 "parser.tab.c"
+#line 5377 "parser.tab.c"
     break;
 
   case 251: /* ShiftExpression: ShiftExpression RIGHT_OP AdditiveExpression  */
-#line 2153 "parser.y"
+#line 2170 "parser.y"
                                                                                         {
         genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5368,17 +5385,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), ">>", (yyvsp[-2].node), (yyvsp[0].node), line);
    }
-#line 5372 "parser.tab.c"
+#line 5389 "parser.tab.c"
     break;
 
   case 252: /* AdditiveExpression: MultiplicativeExpression  */
-#line 2163 "parser.y"
+#line 2180 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5378 "parser.tab.c"
+#line 5395 "parser.tab.c"
     break;
 
   case 253: /* AdditiveExpression: AdditiveExpression '+' MultiplicativeExpression  */
-#line 2164 "parser.y"
+#line 2181 "parser.y"
                                                                                         {
         genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5386,11 +5403,11 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "+", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5390 "parser.tab.c"
+#line 5407 "parser.tab.c"
     break;
 
   case 254: /* AdditiveExpression: AdditiveExpression '-' MultiplicativeExpression  */
-#line 2171 "parser.y"
+#line 2188 "parser.y"
                                                                                         {
         genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5398,17 +5415,17 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "-", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5402 "parser.tab.c"
+#line 5419 "parser.tab.c"
     break;
 
   case 255: /* MultiplicativeExpression: UnaryExpression  */
-#line 2181 "parser.y"
+#line 2198 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5408 "parser.tab.c"
+#line 5425 "parser.tab.c"
     break;
 
   case 256: /* MultiplicativeExpression: MultiplicativeExpression '*' UnaryExpression  */
-#line 2182 "parser.y"
+#line 2199 "parser.y"
                                                                                         {
         genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5416,11 +5433,11 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "*", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5420 "parser.tab.c"
+#line 5437 "parser.tab.c"
     break;
 
   case 257: /* MultiplicativeExpression: MultiplicativeExpression '/' UnaryExpression  */
-#line 2189 "parser.y"
+#line 2206 "parser.y"
                                                                                         {
         genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5428,11 +5445,11 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "/", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5432 "parser.tab.c"
+#line 5449 "parser.tab.c"
     break;
 
   case 258: /* MultiplicativeExpression: MultiplicativeExpression '%' UnaryExpression  */
-#line 2196 "parser.y"
+#line 2213 "parser.y"
                                                                                         {
         genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5440,31 +5457,31 @@ yyreduce:
 		(yyval.node)->code.insert((yyval.node)->code.end(), (yyvsp[0].node)->code.begin(), (yyvsp[0].node)->code.end());
 		gen2OpCode((yyval.node), "%", (yyvsp[-2].node), (yyvsp[0].node), line);
     }
-#line 5444 "parser.tab.c"
+#line 5461 "parser.tab.c"
     break;
 
   case 259: /* UnaryExpression: PreIncrementExpression  */
-#line 2206 "parser.y"
+#line 2223 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5450 "parser.tab.c"
+#line 5467 "parser.tab.c"
     break;
 
   case 260: /* UnaryExpression: PreDecrementExpression  */
-#line 2207 "parser.y"
+#line 2224 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5456 "parser.tab.c"
+#line 5473 "parser.tab.c"
     break;
 
   case 261: /* UnaryExpression: '+' UnaryExpression  */
-#line 2208 "parser.y"
+#line 2225 "parser.y"
                                                                                         {
        (yyval.node) = (yyvsp[0].node);
    }
-#line 5464 "parser.tab.c"
+#line 5481 "parser.tab.c"
     break;
 
   case 262: /* UnaryExpression: '-' UnaryExpression  */
-#line 2211 "parser.y"
+#line 2228 "parser.y"
                                                                                         {
     	genNode* n = new genNode();
 		(yyval.node) = n;
@@ -5472,112 +5489,112 @@ yyreduce:
 		zeroNode->isLit = true; zeroNode->place = "0"; zeroNode->type = "int";
 		gen2OpCode((yyval.node), "-", zeroNode, (yyvsp[0].node), line);
    }
-#line 5476 "parser.tab.c"
+#line 5493 "parser.tab.c"
     break;
 
   case 263: /* UnaryExpression: UnaryExpressionNotPlusMinus  */
-#line 2218 "parser.y"
+#line 2235 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5482 "parser.tab.c"
+#line 5499 "parser.tab.c"
     break;
 
   case 264: /* PreIncrementExpression: INC_OP UnaryExpression  */
-#line 2222 "parser.y"
+#line 2239 "parser.y"
                                                                                         {
     	(yyval.node) = (yyvsp[0].node);
 		getPreUnaryOpCode("++", (yyval.node), (yyvsp[0].node), line);
    }
-#line 5491 "parser.tab.c"
+#line 5508 "parser.tab.c"
     break;
 
   case 265: /* PreDecrementExpression: DEC_OP UnaryExpression  */
-#line 2229 "parser.y"
+#line 2246 "parser.y"
                                                                                         {
     	(yyval.node) = (yyvsp[0].node);
 		getPreUnaryOpCode("--", (yyval.node), (yyvsp[0].node), line);
    }
-#line 5500 "parser.tab.c"
+#line 5517 "parser.tab.c"
     break;
 
   case 266: /* UnaryExpressionNotPlusMinus: PostfixExpression  */
-#line 2236 "parser.y"
+#line 2253 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5506 "parser.tab.c"
+#line 5523 "parser.tab.c"
     break;
 
   case 267: /* UnaryExpressionNotPlusMinus: '~' UnaryExpression  */
-#line 2237 "parser.y"
+#line 2254 "parser.y"
                                                                                         {
    }
-#line 5513 "parser.tab.c"
+#line 5530 "parser.tab.c"
     break;
 
   case 268: /* UnaryExpressionNotPlusMinus: '!' UnaryExpression  */
-#line 2239 "parser.y"
+#line 2256 "parser.y"
                                                                                         {
 
    }
-#line 5521 "parser.tab.c"
+#line 5538 "parser.tab.c"
     break;
 
   case 269: /* UnaryExpressionNotPlusMinus: CastExpression  */
-#line 2242 "parser.y"
+#line 2259 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5527 "parser.tab.c"
+#line 5544 "parser.tab.c"
     break;
 
   case 270: /* PostfixExpression: Primary  */
-#line 2246 "parser.y"
+#line 2263 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5533 "parser.tab.c"
+#line 5550 "parser.tab.c"
     break;
 
   case 271: /* PostfixExpression: TypeName  */
-#line 2247 "parser.y"
+#line 2264 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5539 "parser.tab.c"
+#line 5556 "parser.tab.c"
     break;
 
   case 272: /* PostfixExpression: PostIncrementExpression  */
-#line 2248 "parser.y"
+#line 2265 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5545 "parser.tab.c"
+#line 5562 "parser.tab.c"
     break;
 
   case 273: /* PostfixExpression: PostDecrementExpression  */
-#line 2249 "parser.y"
+#line 2266 "parser.y"
                                                                                         {(yyval.node)=(yyvsp[0].node);}
-#line 5551 "parser.tab.c"
+#line 5568 "parser.tab.c"
     break;
 
   case 274: /* PostIncrementExpression: PostfixExpression INC_OP  */
-#line 2253 "parser.y"
+#line 2270 "parser.y"
                                                                                         {
         (yyval.node) = (yyvsp[-1].node);
 		getPostUnaryOpCode("++", (yyval.node), (yyvsp[-1].node), line);
    }
-#line 5560 "parser.tab.c"
+#line 5577 "parser.tab.c"
     break;
 
   case 275: /* PostDecrementExpression: PostfixExpression DEC_OP  */
-#line 2260 "parser.y"
+#line 2277 "parser.y"
                                                                                         {
         (yyval.node) = (yyvsp[-1].node);
 		getPostUnaryOpCode("--", (yyval.node), (yyvsp[-1].node), line);
    }
-#line 5569 "parser.tab.c"
+#line 5586 "parser.tab.c"
     break;
 
   case 276: /* CastExpression: '(' PrimitiveType ')' UnaryExpression  */
-#line 2267 "parser.y"
+#line 2284 "parser.y"
                                                                                         {
          
    }
-#line 5577 "parser.tab.c"
+#line 5594 "parser.tab.c"
     break;
 
 
-#line 5581 "parser.tab.c"
+#line 5598 "parser.tab.c"
 
       default: break;
     }
@@ -5801,7 +5818,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 2273 "parser.y"
+#line 2290 "parser.y"
 
 
 int main (void) {

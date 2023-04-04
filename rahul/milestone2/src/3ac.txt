@@ -1,35 +1,51 @@
-label test_1
-label fn
-readParam c
-readParam y
-readParam x
-tVar_0 = x + y
-c = tVar_0
-retint cretint 
-label pp
-readParam c
-x = c
-retint xretint 
-label Main
-readParam args
-tVar_1 = 10
-tVar_2 = 2
-tVar_3 = 3
-tVar_4 = 4
-tVar_5 = 5
-c = 10
-tVar_6 = c[1]
-tVar_6 = 409
-c[1] = tVar_6
-tVar_7 = c[1]
-tVar_8 = tVar_7 > 20
-if tVar_8 goto label_0
-goto label_1
+label test_5
+label sumArray
+readParam n
+readParam arr
+sum = 0
+i = 0
 label label_0
-m = 3
+tVar_0 = i < n
+if tVar_0 goto label_1
+goto label_2
 label label_1
-tVar_9 = c[0]
-call, tVar_10 pp, 0
-k = 10
-call, tVar_11 fn, 0
-t = tVar_11
+tVar_1 = arr[i]
+sum += tVar_1
+label label_3
+i = i + 1
+goto label_0
+label label_2
+retint sumretint 
+label main
+readParam args
+tVar_2 = 1
+tVar_3 = 2
+tVar_4 = 3
+tVar_5 = 4
+tVar_6 = 5
+numbers = 1
+tVar_7 = numbers[0]
+c = tVar_7
+tVar_8 = numbers[2]
+tVar_8 = 7
+numbers[2] = tVar_8
+i = 0
+label label_4
+tVar_9 = i < 3
+if tVar_9 goto label_5
+goto label_6
+label label_5
+tVar_10 = numbers[i]
+tVar_10 += 1
+numbers[i] = tVar_10
+label label_7
+i = i + 1
+goto label_4
+label label_6
+param numbers
+param c
+call, tVar_11 sumArray, 2
+p = tVar_11
+retint tVar_13retint 
+tVar_12 = numbers[1]
+tVar_13 = c + tVar_12
