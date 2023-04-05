@@ -79,32 +79,37 @@ void printTAC(genNode *node)
 		case 3:
 			if (t->op == "call")
 			{
-				output << t->op << ", " << t->dest->name << " " << t->target << ", " << t->l1;
+				output << "push addr" << endl;
+				// output << "stackpointer +xxx" << endl;
+				output << t->op << ", " << t->dest->name << " " << t->target << ", " << t->l1 << endl;
+				// output << "stackpointer -yyy" << endl;
+				output << "pop"
+					   << " " << t->dest->name;
 			}
 			else if (t->op == "setarr")
 			{
 				if (!t->isInt1 && !t->isInt2)
 				{
 					output << t->array_name << "[" << t->opd1->name << "]"
-						 << " = " << t->opd2->name;
+						   << " = " << t->opd2->name;
 					// cout<< t->op << ", " << t->array_name << ", " << t->opd1->name << ", " << t->opd2->name;
 				}
 				else if (t->isInt1 && !t->isInt2)
 				{
 					output << t->array_name << "[" << t->l1 << "]"
-						 << " = " << t->opd2->name;
+						   << " = " << t->opd2->name;
 					// cout<< t->op << ", " << t->array_name << ", " << t->l1 << ", " << t->opd2->name;
 				}
 				else if (!t->isInt1 && t->isInt2)
 				{
 					output << t->array_name << "[" << t->opd1->name << "]"
-						 << " = " << t->l2;
+						   << " = " << t->l2;
 					// cout<< t->op << ", " << t->array_name << ", " << t->opd1->name << ", " << t->l2;
 				}
 				else
 				{
 					output << t->array_name << "[" << t->l1 << "]"
-						 << " = " << t->l2;
+						   << " = " << t->l2;
 					// cout<< t->op << ", " << t->array_name << ", " << t->l1 << ", " << t->l2;
 				}
 			}
@@ -162,14 +167,35 @@ void printTAC(genNode *node)
 				output << t->dest->name << " " << t->op;
 				break;
 			}
+
 			else if (t->op == "retint")
 			{
 				if (t->isInt1)
-					output << t->op << " " << t->l1;
+				{   
+					output << "pop addr"<<endl;
+					output << t->op << " " << t->l1 << endl;
+					output << "goto addr";
+				}
 				else
-					output << t->op << " " << t->dest->name;
+				{
+					output << "pop addr"<<endl;
+					output << t->op << " " << t->dest->name << endl;
+					output << "goto addr";
+				}
 			}
-			output << t->op << " " << t->target;
+			else if (t->op == "param")
+			{
+				output << t->op << "(push) " << t->target;
+			}
+			else if (t->op == "readParam")
+			{
+				output << t->op << "(pop) " << t->target;
+			}
+			else
+			{
+				output << t->op << " " << t->target;
+			}
+
 			break;
 		case -1:
 			output << t->op;

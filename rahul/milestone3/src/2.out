@@ -1,0 +1,86 @@
+pphello
+fnhello
+BLOCKTYPE None 
+
+scope1
+CLASSTYPE test1 
+sumArray None 2 Identifier 
+test1 None 1 Identifier 
+
+scope1
+METHODTYPE sumArray 
+arr int 2 6 Identifier 
+n int 2 5 Identifier 
+
+scope1
+BLOCKTYPE None 
+sum int 3 6 8 Identifier 
+
+scope1
+BLOCKTYPE None 
+i int 5 5 5 6 Identifier 
+label_0 label 0 Identifier 
+label_1 label 0 Identifier 
+label_2 label 0 Identifier 
+label_3 label 0 Identifier 
+tVar_0 boolean 0 Identifier 
+
+scope1
+BLOCKTYPE None 
+tVar_1 int 0 Identifier 
+
+scope2
+CLASSTYPE test_1 
+Main None 23 Identifier 
+fn None 13 Identifier 
+pp None 18 Identifier 
+test_1 None 11 Identifier 
+
+scope1
+METHODTYPE fn 
+c int 13 14 15 Identifier 
+x int 13 14 Identifier 
+y int 13 14 Identifier 
+
+scope1
+BLOCKTYPE None 
+tVar_2 int 0 Identifier 
+
+scope2
+METHODTYPE pp 
+c int 18 19 Identifier 
+
+scope1
+BLOCKTYPE None 
+x int 19 20 Identifier 
+
+scope3
+METHODTYPE Main 
+String None 23 Identifier 
+args String 23 Identifier 
+
+scope1
+BLOCKTYPE None 
+c int 24 25 26 29 Identifier 
+fn None 31 Identifier 
+k int 30 Identifier 
+label_4 label 0 Identifier 
+label_5 label 0 Identifier 
+pp None 29 Identifier 
+t int 31 Identifier 
+tVar_10 boolean 0 Identifier 
+tVar_11 int 0 Identifier 
+tVar_12 int 0 Identifier 
+tVar_13 int 0 Identifier 
+tVar_3 None 0 Identifier 
+tVar_4 None 0 Identifier 
+tVar_5 None 0 Identifier 
+tVar_6 None 0 Identifier 
+tVar_7 None 0 Identifier 
+tVar_8 int 0 Identifier 
+tVar_9 int 0 Identifier 
+
+scope1
+BLOCKTYPE None 
+m long 27 Identifier 
+
