@@ -1,11 +1,11 @@
+class test1{
+    private void printHello(){
+        String c = " Hello World!";
+    }
+}
 public class test_10 {
-    //Error expected 
+    // Method scope error
     public static void main(String[] args) {
-        int x = 10;
-        float y;
-        x=y;
-        if (x == 10) { //Error cause missing ')' 
-            System.out.println("x is equal to 10");
-        }
+        test1.printHello();
     }
 }

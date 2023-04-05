@@ -128,6 +128,7 @@ void printTAC(genNode *node)
 			}
 			else if (!t->isInt1 && !t->isInt2)
 			{
+
 				output << t->dest->name << " = " << t->opd1->name << " " << t->op << " " << t->opd2->name;
 			}
 			else if (t->isInt1 && !t->isInt2)
@@ -152,12 +153,18 @@ void printTAC(genNode *node)
 				}
 				else
 				{
+					output << "push " << t->dest->name << endl;
 					output << t->dest->name << " " << t->op << " " << t->opd1->name;
+					// output << "pop " << t->dest->name << endl;
 					// cout<< t->op << ", " << t->dest->name << ", " << t->opd1->name;
 				}
 			}
 			else
+			{
+				output << "push " << t->dest->name << endl;
 				output << t->dest->name << " " << t->op << " " << t->l1;
+				// output << "pop " << t->dest->name;
+			}
 			// cout<< t->op << ", " << t->dest->name << ", " << t->l1;
 			break;
 		case 1:
@@ -171,15 +178,17 @@ void printTAC(genNode *node)
 			else if (t->op == "retint")
 			{
 				if (t->isInt1)
-				{   
-					output << "pop addr"<<endl;
+				{
+					output << "pop addr" << endl;
 					output << t->op << " " << t->l1 << endl;
+					output<< "pop " << t->l1<<endl;
 					output << "goto addr";
 				}
 				else
 				{
-					output << "pop addr"<<endl;
+					output << "pop addr" << endl;
 					output << t->op << " " << t->dest->name << endl;
+					output<< "pop " << t->dest->name<<endl;
 					output << "goto addr";
 				}
 			}

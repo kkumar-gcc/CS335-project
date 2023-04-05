@@ -1862,7 +1862,6 @@ MethodInvocation
         TAC* tac = new TAC();
 		tac->op = "call";
 		tac->isInt1 = true;
-        cout<<$1->place <<"hello" <<endl;
 		Env* methodEnv = ST->GetMethod($1->place);
 		if(!methodEnv){
 			cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<line<<endl;

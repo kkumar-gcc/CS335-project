@@ -43,6 +43,8 @@ struct TAC
 	bool isBreak;
 	bool isContinue;
 
+	stack<int> activationRecord;
+
 	TAC(){
 		isInt1 = false;
 		isInt2 = false;
