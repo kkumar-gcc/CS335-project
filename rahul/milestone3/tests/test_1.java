@@ -4,6 +4,7 @@ public class test_1 {
         String x = C;
     }
     public static void Main(String[] args) {
+        int b = 2+-3;
         pp("Hello world!");
     }
 

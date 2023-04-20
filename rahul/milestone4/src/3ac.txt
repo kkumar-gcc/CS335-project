@@ -1,0 +1,26 @@
+label test_3
+label main
+beginScope test_3 main
+readParam(pop) args
+beginScope main None
+push j
+j = 0
+push num
+num = 10
+tVar_0 = num > 0
+if tVar_0 goto label_0
+goto label_1
+label label_0
+beginScope None None
+push t
+t = 2
+endScope None None
+goto label_2
+label label_1
+beginScope None None
+push t
+t = 3
+endScope None None
+label label_2
+endScope None main
+endScope main test_3

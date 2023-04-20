@@ -1,0 +1,27 @@
+#pragma once
+#include "config.h"
+#include "Env.cpp"
+
+class SymTable{
+public:
+	Env* baseEnv;
+	Env* curEnv;
+	SymTable();
+
+	Env* GetMainClass();
+	Symbol* AddVar(string varName, string varType, string genericType, int _width,string varToken ,int line);
+	string GetMethodType();
+	Symbol* GetVar(string varName);
+	Symbol* GetVarInClass(string varName);
+	string GenTemp();
+	Env* BeginScope(string scopeName, string scopeType, string returnType, string Class, string Parent_Class);
+	string GetEnvName();
+	string GetPrevEnvName();
+	Env* GetMethod(string methodName);
+	Env* GetMethodInClass(string methodName, string className);
+	Env* FindClass(string className);
+	Env* EndScope();
+	vector <string> SetArgTypeList(vector <string> args);
+	void PrintTable(Env* env);
+
+};

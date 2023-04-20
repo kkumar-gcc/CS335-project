@@ -1,58 +1,15 @@
-label test_9
-label isGreater
-readParam(pop) y
-readParam(pop) x
-tVar_0 = x > y
-if tVar_0 goto label_0
-goto label_1
-label label_0
-push tVar_1
-tVar_1 = "x is greater than y"
-goto label_2
-label label_1
-push tVar_1
-tVar_1 = "y is greater than x"
-label label_2
-push result
-result = tVar_1
-pop addr
-retint result
-pop result
-goto addr
-label main
+label test_1
+label pp
+readParam(pop) C
+push x
+x = C
+label Main
 readParam(pop) args
+tVar_0 = 0 - 3
+tVar_1 = 2 + tVar_0
 push b
-b = 1
-push c
-c = 1
-push d
-d = 1
-push m
-m = 1
-push k
-k = 1
-push j
-j = 2
-push y
-y = 3
-tVar_2 = b + c
-tVar_3 = tVar_2 / d
-tVar_4 = tVar_3 * m
-tVar_5 = k % j
-tVar_6 = tVar_4 * tVar_5
-tVar_7 = d * j
-tVar_8 = tVar_6 - tVar_7
-push a
-a = tVar_8
-a = a + 1
-param(push) a
-param(push) y
+b = tVar_1
+param(push) "Hello world!"
 push addr
-call, tVar_9 isGreater, 2
-pop tVar_9
-push result
-result = tVar_9
-pop addr
-retint result
-pop result
-goto addr
+call, tVar_2 pp, 1
+pop tVar_2

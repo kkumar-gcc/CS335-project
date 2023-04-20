@@ -1,0 +1,28 @@
+BLOCKTYPE None 
+
+scope1
+CLASSTYPE test_3 
+a int 3 Identifier 
+
+scope1
+METHODTYPE main 
+args String 4 Identifier 
+
+scope1
+BLOCKTYPE None 
+ None 0 Identifier 
+j int 5 Identifier 
+num int 6 7 Identifier 
+tVar_0 boolean 0 Identifier 
+um None 0 Identifier 
+
+scope1
+BLOCKTYPE None 
+ None 0 Identifier 
+t int 8 9 Identifier 
+
+scope2
+BLOCKTYPE None 
+ None 0 Identifier 
+t int 12 13 Identifier 
+

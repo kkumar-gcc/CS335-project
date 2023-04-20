@@ -1,50 +1,30 @@
 BLOCKTYPE None 
 
 scope1
-CLASSTYPE test_9 
-String None 7 Identifier 
-isGreater None 3 Identifier 
-main None 7 Identifier 
-test_9 None 1 Identifier 
+CLASSTYPE test_1 
+Main None 6 Identifier 
+pp None 3 Identifier 
+test_1 None 1 Identifier 
 
 scope1
-METHODTYPE isGreater 
-x int 3 4 Identifier 
-y int 3 4 Identifier 
+METHODTYPE pp 
+C String 3 4 Identifier 
+String None 3 4 Identifier 
 
 scope1
 BLOCKTYPE None 
-String None 4 Identifier 
-label_0 label 0 Identifier 
-label_1 label 0 Identifier 
-label_2 label 0 Identifier 
-result String 4 5 Identifier 
-tVar_0 boolean 0 Identifier 
-tVar_1 None 0 Identifier 
+x String 4 Identifier 
 
 scope2
-METHODTYPE main 
-String None 7 11 Identifier 
-args String 7 Identifier 
+METHODTYPE Main 
+String None 6 Identifier 
+args String 6 Identifier 
 
 scope1
 BLOCKTYPE None 
-a int 9 10 11 Identifier 
-b int 8 9 Identifier 
-c int 8 9 Identifier 
-d int 8 9 9 Identifier 
-isGreater None 11 Identifier 
-j int 8 9 9 Identifier 
-k int 8 9 Identifier 
-m int 8 9 Identifier 
-result String 11 12 Identifier 
-tVar_2 int 0 Identifier 
-tVar_3 int 0 Identifier 
-tVar_4 int 0 Identifier 
-tVar_5 int 0 Identifier 
-tVar_6 int 0 Identifier 
-tVar_7 int 0 Identifier 
-tVar_8 int 0 Identifier 
-tVar_9 String 0 Identifier 
-y int 8 11 Identifier 
+b int 7 Identifier 
+pp None 8 Identifier 
+tVar_0 int 0 Identifier 
+tVar_1 int 0 Identifier 
+tVar_2 void 0 Identifier 
 
