@@ -1,7 +1,7 @@
 %{
 
 #include <bits/stdc++.h>
-#include "genTAC.cpp"
+#include "codeGen.cpp"
 #define YYDEFUG 1
 using namespace std;
 
@@ -79,8 +79,8 @@ long long int line=1;
 Start : CompilationUnit { 
 	    $$ = $1;
 		root=$$;
-		// setLineNum($$);
-		// IR = $$->code;
+		setLineNum($$);
+		IR = $$->code;
       }
       ;
 CompilationUnit : 
@@ -123,7 +123,9 @@ Identifier
 		}	
 		if(sym == NULL){
 			sym = ST->GetVarInClass(s1);
-			sym = ST->AddVar(s1,"None","simple",-1,"Identifier",line);
+			if(sym == NULL){
+                sym = ST->AddVar(s1,"None","simple",-1,"Identifier",line);
+			}
         }
         else{
             sym->line.push_back(line); 
@@ -505,9 +507,8 @@ VariableDeclaratorList  //TODO : NEED SOME CHANGES
 		$$->varDecs.pb(sym);
     }
     | VariableDeclarator {
-        	$$ = $1; 
-			Symbol* sym = ST->GetVar($1->place);
-			$$->varDecs.pb(sym);
+        	$$ = $1;
+			$$->varDecs.pb(ST->GetVar($1->place));
     }
     ;
 
@@ -853,45 +854,45 @@ Block
     : BlockStart '{' BlockStatements '}'                {
 		$$ = $3; 
 
-			vector <TAC*> code = $3->code;
+		vector <TAC*> code = $3->code;
 
-			$$->code.clear();
-			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
-			$$->code.insert($$->code.end(), code.begin(), code.end());
+		$$->code.clear();
+		$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
+		$$->code.insert($$->code.end(), code.begin(), code.end());
 
-			TAC* tac = new TAC();
-			tac->op = "endScope";
-			tac->oldScope = ST->curEnv;
-			tac->newScope = ST->curEnv->prevEnv;
-			$$->code.pb(tac);
+		TAC* tac = new TAC();
+		tac->op = "endScope";
+		tac->oldScope = ST->curEnv;
+		tac->newScope = ST->curEnv->prevEnv;
+		$$->code.pb(tac);
 
-			ST->EndScope(); 
+		ST->EndScope(); 
 	}
     | BlockStart '{' '}'                                {
 		$$ = $1; 
 
-			TAC* tac = new TAC();
-			tac->op = "endScope";
-			tac->oldScope = ST->curEnv;
-			tac->newScope = ST->curEnv->prevEnv;
-			$$->code.pb(tac);
+		TAC* tac = new TAC();
+		tac->op = "endScope";
+		tac->oldScope = ST->curEnv;
+		tac->newScope = ST->curEnv->prevEnv;
+		$$->code.pb(tac);
 
-			ST->EndScope();	
+		ST->EndScope();	
 	}
     ;
 
 BlockStart 
     : {
 		genNode* newNode = new genNode();
-			$$ = newNode; 
+		$$ = newNode; 
 
-			TAC* tac = new TAC();
-			tac->op = "beginScope";
-			tac->oldScope = ST->curEnv;
-			ST->BeginScope();
+		TAC* tac = new TAC();
+		tac->op = "beginScope";
+		tac->oldScope = ST->curEnv;
+		ST->BeginScope();
 
-			tac->newScope = ST->curEnv;
-			$$->code.pb(tac);
+		tac->newScope = ST->curEnv;
+		$$->code.pb(tac);
 	}
 	;
 
@@ -2212,80 +2213,85 @@ FieldAccess // TODO : CHECK FIELD ACCESS
 
 ArrayAccess
     : TypeName '[' Expression ']' {
-        genNode* newNode = new genNode;
-		$$ = newNode;
-		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-		Symbol* temp = ST->GetVar(ST->GenTemp());
-		temp->type = ST->GetVar($1->place)->type;
-		$$->place = temp->name;
-		$$->type = ST->GetVar($1->place)->type;
-		if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
-			cerr << "Symbol " << $1->place << " not defined, at line: " <<line;
-			exit(1);
-		}
-		TAC* tac = new TAC();
-		tac->op = "getarr";
-		tac->dest = temp;
-		tac->array_name = $1->place;
-		$$->isArray = true;
-		if($3->isLit){
-			tac->isInt2 = true;
-			tac->l2 = $3->place;
-			$$->isLit=true;
-		}
-		else{
-			tac->opd2 = ST->GetVar($3->place);
-			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
-				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+        genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			Symbol* temp = ST->GetVar(ST->GenTemp());
+			temp->type = ST->GetVar($1->place)->type;
+			$$->place = temp->name;
+			$$->type = ST->GetVar($1->place)->type;
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<line;
 				exit(1);
 			}
+			TAC* tac = new TAC();
+			tac->op = "getarr";
+			tac->dest = temp;
+			tac->array_name = $1->place;
+			$$->isArray = true;
 			$$->isLit = false;
+			// cerr << $3->place << endl;
+			// cerr << $3->isLit << endl;
+			if($3->isLit){
+				tac->isInt2 = true;
+				tac->l2 = $3->place;
+				// $$->isLit=true;
+			}
+			else{
+				tac->opd2 = ST->GetVar($3->place);
+				if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+					cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+					exit(1);
+				}
+				$$->isLit = false;
 
-		}
-		$$->arrayName = $1->place;
-		$$->arrayIndex = $3->place;
-		$$->code.pb(tac);
+			}
+			$$->arrayName = $1->place;
+			$$->arrayIndex = $3->place;
+			$$->code.pb(tac);
         
     }
     | PrimaryNoNewArray '[' Expression ']'  {
        	genNode* newNode = new genNode;
-		$$ = newNode;
-		if($1->isLit){
-			cerr<<"Error: invalid array name at line: "<<line<<endl;
-			exit(1);
-		}
-		$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
-		$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-		Symbol* temp = ST->GetVar(ST->GenTemp());
-		temp->type = ST->GetVar($1->place)->type;
-		if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
-			cerr << "Symbol " << $1->place << " not defined, at line: " <<line;
-			exit(1);
-		}
-		$$->place = temp->name;
-		$$->type = ST->GetVar($1->place)->type;
-		TAC* tac = new TAC();
-		tac->op = "getarr";
-		tac->dest = temp;
-		tac->array_name = $1->place;
-		$$->isArray = true;
-		if($3->isLit){
-			tac->isInt2 = true;
-			tac->l2 = $3->place;
-			// $$->isLit=true;
-		}
-		else{
-			tac->opd2 = ST->GetVar($3->place);
-			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
-				cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+			$$ = newNode;
+			if($1->isLit){
+				cerr<<"Error: invalid array name at line: "<<line<<endl;
 				exit(1);
 			}
-			$$->isLit = false;
+			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			Symbol* temp = ST->GetVar(ST->GenTemp());
+			temp->type = ST->GetVar($1->place)->type;
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<line;
+				exit(1);
+			}
+			$$->place = temp->name;
+			$$->type = ST->GetVar($1->place)->type;
+			TAC* tac = new TAC();
+			tac->op = "getarr";
+			tac->dest = temp;
+			tac->array_name = $1->place;
+			$$->isArray = true;
+			$$->isLit = false;	
 
-		}
-		$$->arrayName = $1->place;
-		$$->arrayIndex = $3->place;
-		$$->code.pb(tac);
+			if($3->isLit){
+				tac->isInt2 = true;
+				tac->l2 = $3->place;
+				// $$->isLit=true;
+			}
+			else{
+				tac->opd2 = ST->GetVar($3->place);
+				if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+					cerr << "Symbol " << $3->place << " not defined, at line: " <<line;
+					exit(1);
+				}
+				$$->isLit = false;
+
+			}
+			$$->arrayName = $1->place;
+			$$->arrayIndex = $3->place;
+			$$->code.pb(tac);
     }
     ;
 
@@ -2310,7 +2316,6 @@ MethodInvocation
 		$$->type = methodEnv->returnType;
 		$$->code.pb(tac);
     }
-
 	| TypeName '(' ArgumentList ')' {
         TAC* tac = new TAC();
 		tac->op = "call";
@@ -2769,10 +2774,10 @@ int main (void) {
     yyparse();
 
     // generateDotFile();
-    ST->PrintTable(ST->baseEnv);
+    // ST->PrintTable(ST->baseEnv);
 	printTAC(root);
     
-    // codeGen();
+    codeGen();
     return 1;
 }
 

@@ -1,28 +1,51 @@
-BLOCKTYPE None 
-
-scope1
-CLASSTYPE test_3 
-a int 3 Identifier 
-
-scope1
-METHODTYPE main 
-args String 4 Identifier 
-
-scope1
-BLOCKTYPE None 
- None 0 Identifier 
-j int 5 Identifier 
-num int 6 7 Identifier 
-tVar_0 boolean 0 Identifier 
-um None 0 Identifier 
-
-scope1
-BLOCKTYPE None 
- None 0 Identifier 
-t int 8 9 Identifier 
-
-scope2
-BLOCKTYPE None 
- None 0 Identifier 
-t int 12 13 Identifier 
-
+.data
+.text
+main:
+	push		%rbp
+	movq		%rsp,%rbp
+test_9:
+isGreater:
+	subq		$12, %rsp
+	movl		$0, -8(%rbp)
+	movl		$2, -8(%rbp)
+	movl		-8(%rbp), %edx
+	movl		-4(%rbp), %eax
+	cmpl		%edx, %eax
+label_0:
+	movl		$"x is greater than y", -8(%rbp)
+label_1:
+	movl		$"y is greater than x", -8(%rbp)
+label_2:
+	movl		-4(%rbp), %eax
+	movl		%eax, -8(%rbp)
+	subq		$12, %rsp
+	subq		$0, %rsp
+main:
+	subq		$60, %rsp
+	movl		$1, -8(%rbp)
+	movl		$1, -8(%rbp)
+	movl		$1, -8(%rbp)
+	movl		$1, -8(%rbp)
+	movl		$1, -8(%rbp)
+	movl		$2, -8(%rbp)
+	movl		$3, -8(%rbp)
+	movl		-8(%rbp), %eax
+	addl		-4(%rbp), %eax
+	movl		-8(%rbp), %eax
+	idivl		-4(%rbp), %eax
+	movl		-8(%rbp), %eax
+	imul		-4(%rbp), %eax
+	movl		-8(%rbp), %eax
+	imul		-4(%rbp), %eax
+	movl		-8(%rbp), %eax
+	imul		-4(%rbp), %eax
+	movl		-8(%rbp), %eax
+	subl		-4(%rbp), %eax
+	movl		-4(%rbp), %eax
+	movl		%eax, -8(%rbp)
+	movl		-8(%rbp), %eax
+	addl		-4(%rbp), %eax
+	movl		-4(%rbp), %eax
+	movl		%eax, -8(%rbp)
+	subq		$60, %rsp
+	subq		$0, %rsp

@@ -1,5 +1,5 @@
 public class test_8 {
-    public static void main(String[] args) {
+    public static void main() {
         /* This variable is *** added to check the ultimate level of errorCheck */
         double $Beaware = 0x0___00___0.1___1___1p0____0d;
         double $$NOOO = .0____0e-0_____0;
@@ -34,11 +34,9 @@ public class test_8 {
         }
     }
 
-    public static int sumArray(int[] arr) {
+    public static int sumArray() {
         int sum = 0;
-        for (int i = 0; i < arr.length; i++) {
-            sum += arr[i];
-        }
+        System.out.println(sum);
         return sum;
     }
 
@@ -49,7 +47,7 @@ public class test_8 {
         Node right;  
     }  
 
-    public static void main2(String[] args) {  
+    public static void main2() {  
         int d=6;
         //Add nodes to the binary tree  
           /*

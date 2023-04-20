@@ -1,7 +1,7 @@
 public class test_3 {
     // Program with conditional statements:
     int a ;
-    public void main(String[] args) {
+    public void main() {
         int j=0;
         int num = 10;
         if (num > 0) {

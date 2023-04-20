@@ -1,26 +1,65 @@
-label test_3
-label main
-beginScope test_3 main
-readParam(pop) args
-beginScope main None
-push j
-j = 0
-push num
-num = 10
-tVar_0 = num > 0
+label test_9
+label isGreater
+beginScope test_9 isGreater
+beginScope isGreater None
+push x
+x = 0
+push y
+y = 2
+tVar_0 = x > y
 if tVar_0 goto label_0
 goto label_1
 label label_0
-beginScope None None
-push t
-t = 2
-endScope None None
+push tVar_1
+tVar_1 = "x is greater than y"
 goto label_2
 label label_1
-beginScope None None
-push t
-t = 3
-endScope None None
+push tVar_1
+tVar_1 = "y is greater than x"
 label label_2
+push result
+result = tVar_1
+pop addr
+retint result
+pop result
+goto addr
+endScope None isGreater
+endScope isGreater test_9
+label main
+beginScope test_9 main
+beginScope main None
+push b
+b = 1
+push c
+c = 1
+push d
+d = 1
+push m
+m = 1
+push k
+k = 1
+push j
+j = 2
+push y
+y = 3
+tVar_2 = b + c
+tVar_3 = tVar_2 / d
+tVar_4 = tVar_3 * m
+tVar_5 = k % j
+tVar_6 = tVar_4 * tVar_5
+tVar_7 = d * j
+tVar_8 = tVar_6 - tVar_7
+push a
+a = tVar_8
+a = a + 1
+push addr
+call, tVar_9 isGreater, 0
+pop tVar_9
+push result
+result = tVar_9
+pop addr
+retint result
+pop result
+goto addr
 endScope None main
-endScope main test_3
+endScope main test_9

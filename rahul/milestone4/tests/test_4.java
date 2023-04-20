@@ -1,6 +1,6 @@
 public class test_4 {
     // Program with loops:
-    public static void main(String[] args) {
+    public static void main() {
         int i=1;
         for (; i <= 3; ) {
             i++;

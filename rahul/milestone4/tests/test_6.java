@@ -1,6 +1,6 @@
 public class test_6 {
     // Pwhile loops:
-    public static void main(String[] args) {
+    public static void main() {
         int j = -6;
         while (j <= 5) {
             j++;
